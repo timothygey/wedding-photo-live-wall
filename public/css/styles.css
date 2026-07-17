@@ -339,6 +339,15 @@ input[type="file"] { display: none; }
    .upload-page so the GALLERY keeps its original dark theme.
    ============================================================ */
 
+/* Give the themed pages their own stacking context so the blurred backdrop
+   below paints ABOVE the page's base background (not hidden behind it), and
+   set a light base colour so no dark/purple ever shows through. This mirrors
+   the `isolation: isolate` that makes the live wall's backdrop work. */
+body.upload-page, body.gallery-page {
+  isolation: isolate;
+  background: #e9edf1;
+}
+
 /* Same blurred couple photo backdrop as the wall, fixed behind the page */
 body.upload-page::before {
   content: "";
@@ -365,7 +374,10 @@ body.upload-page::after {
   color: #a9762e;
   text-shadow: 0 1px 2px rgba(255, 252, 245, 0.55);
 }
-.upload-page .guest-header .date { color: rgba(70, 55, 40, 0.82); }
+.upload-page .guest-header .date {
+  color: #5b4a30;
+  text-shadow: 0 1px 2px rgba(255, 252, 245, 0.6);
+}
 
 /* --- Main card: bright frosted-white glass --- */
 .upload-page .upload-card {
@@ -449,7 +461,10 @@ body.gallery-page::after {
 .gallery-page .guest-header .couple {
   color: #a9762e; text-shadow: 0 1px 2px rgba(255, 252, 245, 0.55);
 }
-.gallery-page .guest-header .date { color: rgba(70, 55, 40, 0.82); }
+.gallery-page .guest-header .date {
+  color: #5b4a30;
+  text-shadow: 0 1px 2px rgba(255, 252, 245, 0.6);
+}
 
 /* Buttons — same as the upload page ("Back to Upload"/"Download" = primary,
    "Load more" = secondary frosted glass) */
