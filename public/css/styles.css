@@ -293,8 +293,24 @@ input[type="file"] { display: none; }
     0 8px 26px rgba(0,0,0,0.55);
   animation: popIn 0.6s ease both;
 }
-.photo-grid .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-grid .photo img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  /* Ken Burns: slow zoom + drift for a lively, premium feel. Runs on the
+     <img>, which the frame's overflow:hidden clips — so the frame's size and
+     shape never change. Each tile gets a random negative animation-delay
+     (set in wall.js) so the 15 photos drift out of sync. */
+  transform-origin: center center;
+  will-change: transform;
+  animation: kenBurns 20s ease-in-out infinite alternate;
+}
 @keyframes popIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+@keyframes kenBurns {
+  from { transform: scale(1.05) translate3d(0, 0, 0); }
+  to   { transform: scale(1.21) translate3d(-1.9%, -1.5%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .photo-grid .photo img { animation: none; transform: none; }
+}
 
 .wall-empty {
   grid-column: 1 / -1; grid-row: 1 / -1;

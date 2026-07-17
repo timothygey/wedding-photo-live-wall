@@ -81,6 +81,8 @@ function addPhoto(id, data) {
   const img = document.createElement("img");
   img.src = data.thumbnailURL;
   img.alt = "Guest photo";
+  // Random negative delay so each tile's Ken Burns zoom is out of sync.
+  img.style.animationDelay = `-${(Math.random() * 20).toFixed(1)}s`;
   el.appendChild(img);
   // Newest first.
   grid.insertBefore(el, grid.firstChild === emptyState ? null : grid.firstChild);
