@@ -273,12 +273,6 @@ input[type="file"] { display: none; }
     linear-gradient(to bottom, rgba(251, 247, 240, 0.34) 0%, rgba(243, 237, 228, 0.46) 100%);
 }
 .photo-area { padding: calc(var(--gap) + 4px); display: flex; flex-direction: column; min-width: 0; }
-.photo-area .heading {
-  font-size: 2.2vw; font-weight: 600; letter-spacing: 0.06em;
-  color: #a9762e; margin-bottom: var(--gap); text-align: center;
-  /* Legible deep-gold on the bright backdrop: soft light halo + faint depth */
-  text-shadow: 0 1px 2px rgba(255, 252, 245, 0.55), 0 1px 12px rgba(120, 80, 20, 0.22);
-}
 .photo-grid {
   flex: 1 1 0; display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -338,3 +332,150 @@ input[type="file"] { display: none; }
 .qr-card img, .qr-card canvas, .qr-card > div { display: block; width: 12vw; height: 12vw; }
 .qr-panel .scan-cta { margin-top: 1.4vw; font-size: 1.4vw; font-weight: 600; font-family: var(--font-display); color: #3a2f26; }
 .qr-panel .scan-sub { font-family: var(--font-body); margin-top: 0.4em; font-size: 0.82vw; color: rgba(70, 55, 40, 0.8); max-width: 90%; }
+
+/* ============================================================
+   GUEST UPLOAD PAGE — matches the live wall's bright blurred
+   backdrop + iOS frosted-glass + gold theme. Scoped to
+   .upload-page so the GALLERY keeps its original dark theme.
+   ============================================================ */
+
+/* Same blurred couple photo backdrop as the wall, fixed behind the page */
+body.upload-page::before {
+  content: "";
+  position: fixed;
+  inset: -40px;
+  z-index: -2;
+  background: url("../img/wall-bg.jpg") center center / cover no-repeat;
+  filter: blur(20px) saturate(1.05);
+  transform: scale(1.12);
+}
+/* Bright, airy warm-white veil (no purple) so the page stays light */
+body.upload-page::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(900px 700px at 16% 8%, rgba(240, 217, 168, 0.22), transparent 60%),
+    linear-gradient(to bottom, rgba(251, 247, 240, 0.40) 0%, rgba(243, 237, 228, 0.52) 100%);
+}
+
+/* --- Header text: deep gold + warm charcoal for the light backdrop --- */
+.upload-page .guest-header .couple {
+  color: #a9762e;
+  text-shadow: 0 1px 2px rgba(255, 252, 245, 0.55);
+}
+.upload-page .guest-header .date { color: rgba(70, 55, 40, 0.82); }
+
+/* --- Main card: bright frosted-white glass --- */
+.upload-page .upload-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.44) 55%, rgba(255, 255, 255, 0.50));
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  backdrop-filter: blur(30px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 12px 34px rgba(60, 45, 25, 0.15);
+}
+.upload-page .upload-card p { color: rgba(70, 55, 40, 0.85); }
+
+/* --- Drop zone: lighter frosted fill, dark labels (gold badge unchanged) --- */
+.upload-page .drop-zone {
+  background: rgba(255, 255, 255, 0.34);
+  border-color: rgba(217, 164, 65, 0.7);
+}
+.upload-page .drop-zone:hover,
+.upload-page .drop-zone.dragover {
+  border-color: var(--accent-strong);
+  background: rgba(230, 184, 102, 0.18);
+}
+.upload-page .drop-zone .big-label { color: #3a2f26; }
+.upload-page .drop-zone .hint { color: rgba(70, 55, 40, 0.75); }
+
+/* --- Buttons --- */
+/* Primary "Upload Photos": richer gold gradient, sits well on the light card */
+.upload-page .btn-primary {
+  background: linear-gradient(135deg, rgba(230, 184, 102, 1), rgba(217, 164, 65, 0.95));
+  color: #4a3410;
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 8px 22px rgba(217, 164, 65, 0.45);
+}
+.upload-page .btn-primary:hover { box-shadow: 0 10px 28px rgba(217, 164, 65, 0.6); }
+/* Secondary "View Gallery": frosted-white glass with deep-gold text */
+.upload-page .btn-secondary {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.44));
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  color: #a9762e;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 6px 18px rgba(60, 45, 25, 0.12);
+}
+.upload-page .btn-secondary:hover { background: linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.56)); }
+
+/* --- Selected-file chips: light frosted rows with readable status colours --- */
+.upload-page .selected-item {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: #3a2f26;
+}
+.upload-page .selected-item .status.ok { color: #2e7d32; }
+.upload-page .selected-item .status.err { color: #c0392b; }
+.upload-page .progress { background: rgba(0, 0, 0, 0.1); }
+
+/* --- Toasts: readable on the light card --- */
+.upload-page .toast.success { background: rgba(107, 191, 107, 0.22); color: #2e7d32; border: 1px solid rgba(107, 191, 107, 0.4); }
+.upload-page .toast.error { background: rgba(224, 104, 92, 0.22); color: #c0392b; border: 1px solid rgba(224, 104, 92, 0.4); }
+
+/* ============================================================
+   GUEST GALLERY PAGE — matches the wall + upload bright glass-gold
+   theme. Scoped to .gallery-page so nothing else is affected.
+   ============================================================ */
+
+/* Same blurred couple-photo backdrop + bright veil */
+body.gallery-page::before {
+  content: "";
+  position: fixed; inset: -40px; z-index: -2;
+  background: url("../img/wall-bg.jpg") center center / cover no-repeat;
+  filter: blur(20px) saturate(1.05);
+  transform: scale(1.12);
+}
+body.gallery-page::after {
+  content: "";
+  position: fixed; inset: 0; z-index: -1;
+  background:
+    radial-gradient(900px 700px at 16% 8%, rgba(240, 217, 168, 0.22), transparent 60%),
+    linear-gradient(to bottom, rgba(251, 247, 240, 0.40) 0%, rgba(243, 237, 228, 0.52) 100%);
+}
+
+/* Header text */
+.gallery-page .guest-header .couple {
+  color: #a9762e; text-shadow: 0 1px 2px rgba(255, 252, 245, 0.55);
+}
+.gallery-page .guest-header .date { color: rgba(70, 55, 40, 0.82); }
+
+/* Buttons — same as the upload page ("Back to Upload"/"Download" = primary,
+   "Load more" = secondary frosted glass) */
+.gallery-page .btn-primary {
+  background: linear-gradient(135deg, rgba(230, 184, 102, 1), rgba(217, 164, 65, 0.95));
+  color: #4a3410; border-color: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 8px 22px rgba(217, 164, 65, 0.45);
+}
+.gallery-page .btn-primary:hover { box-shadow: 0 10px 28px rgba(217, 164, 65, 0.6); }
+.gallery-page .btn-secondary {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.44));
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  color: #a9762e; border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 6px 18px rgba(60, 45, 25, 0.12);
+}
+.gallery-page .btn-secondary:hover { background: linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.56)); }
+
+/* Photo cells — frosted-glass tiles (shape unchanged: 1/1 ratio, 14px radius) */
+.gallery-page .gallery-grid .cell {
+  background: rgba(255, 255, 255, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 6px 18px rgba(60, 45, 25, 0.12);
+}
+.gallery-page .gallery-empty { color: rgba(70, 55, 40, 0.8); }
+
+/* Lightbox — warm neutral dark (no purple) so opened photos still pop; the
+   white close button and gold Download button stay readable on it */
+.gallery-page .lightbox { background: rgba(38, 32, 26, 0.82); }
