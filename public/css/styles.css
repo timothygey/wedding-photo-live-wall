@@ -1,0 +1,301 @@
+/* ============================================================
+   Wedding Live Photo Wall — Glass / iOS-inspired theme.
+   Frosted-glass panels, elegant serif display font, animated
+   camera button. QR stays on a solid white card for scannability.
+   ============================================================ */
+
+:root {
+  /* Palette — soft plum/rose with warm gold accents */
+  --accent: #e6b866;
+  --accent-strong: #d9a441;
+  --text-light: #f6f0ea;
+  --text-dim: rgba(246, 240, 234, 0.72);
+  --danger: #ff8a80;
+  --success: #9be29b;
+
+  /* Glass surfaces */
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-bg-strong: rgba(255, 255, 255, 0.14);
+  --glass-border: rgba(255, 255, 255, 0.22);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+
+  --radius: 22px;
+  --gap: 14px;
+
+  /* Fonts */
+  --font-display: "Cormorant Garamond", "Playfair Display", Georgia, serif;
+  --font-body: "Poppins", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  min-height: 100%;
+  font-family: var(--font-body);
+  color: var(--text-light);
+  /* Layered gradient background that the glass blurs against */
+  background:
+    radial-gradient(1200px 800px at 15% 10%, rgba(217, 164, 65, 0.18), transparent 60%),
+    radial-gradient(1000px 900px at 85% 90%, rgba(150, 90, 160, 0.28), transparent 55%),
+    linear-gradient(135deg, #2a1830 0%, #1b1222 45%, #241a30 100%);
+  background-attachment: fixed;
+}
+
+/* ---------- Elegant display type ---------- */
+.couple,
+.heading,
+.guest-header .couple {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* ============================================================
+   Glass buttons
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 15px 22px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--text-light);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease, opacity 0.15s ease;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary {
+  background: linear-gradient(135deg, rgba(230, 184, 102, 0.95), rgba(217, 164, 65, 0.85));
+  color: #2a1830;
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 6px 20px rgba(217, 164, 65, 0.35);
+}
+.btn-primary:hover { box-shadow: 0 8px 26px rgba(217, 164, 65, 0.5); }
+.btn-secondary { background: var(--glass-bg); color: var(--accent); }
+.btn-secondary:hover { background: var(--glass-bg-strong); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+.btn-block { width: 100%; }
+
+/* ============================================================
+   GUEST PAGES (upload + gallery) — mobile-first
+   ============================================================ */
+.guest-wrap { max-width: 640px; margin: 0 auto; padding: 26px 18px 48px; }
+
+.guest-header { text-align: center; margin-bottom: 26px; }
+.guest-header .couple {
+  font-size: 2.6rem;
+  color: var(--accent);
+  line-height: 1.1;
+  text-shadow: 0 2px 18px rgba(217, 164, 65, 0.35);
+}
+.guest-header .date {
+  font-family: var(--font-body);
+  color: var(--text-dim);
+  margin-top: 6px;
+  letter-spacing: 0.28em;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.tab-bar { display: flex; gap: 10px; margin-bottom: 22px; }
+.tab-bar .btn { flex: 1; }
+/* When only one button remains, center it at a comfortable width. */
+.tab-bar-single { justify-content: center; }
+.tab-bar-single .btn { flex: 0 1 auto; min-width: 60%; }
+
+/* ---------- Glass card ---------- */
+.upload-card {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--glass-shadow);
+  padding: 28px 22px;
+  text-align: center;
+}
+.upload-card p { color: var(--text-dim); margin-bottom: 20px; line-height: 1.55; }
+
+/* ---------- Animated camera button (drop zone) ---------- */
+.drop-zone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border: 2px dashed rgba(230, 184, 102, 0.55);
+  border-radius: var(--radius);
+  padding: 30px 18px;
+  margin-bottom: 18px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+  /* Gentle attention pulse */
+  animation: gentlePulse 2.4s ease-in-out infinite;
+}
+.drop-zone:hover,
+.drop-zone.dragover { border-color: var(--accent); background: rgba(230, 184, 102, 0.12); }
+.drop-zone:active { transform: scale(0.98); }
+
+/* Camera icon in a glossy circle that wiggles periodically */
+.drop-zone .cam-badge {
+  width: 78px; height: 78px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  font-size: 2.3rem;
+  background: linear-gradient(135deg, rgba(230,184,102,0.95), rgba(217,164,65,0.8));
+  box-shadow: 0 8px 24px rgba(217, 164, 65, 0.45);
+  animation: wiggle 2.4s ease-in-out infinite;
+}
+.drop-zone .big-label { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; color: var(--text-light); }
+.drop-zone .hint { font-size: 0.82rem; color: var(--text-dim); margin-top: 2px; }
+
+/* Soft glowing ring that ripples outward to draw the eye */
+.drop-zone::after {
+  content: "";
+  position: absolute;
+  top: 42px; left: 50%;
+  width: 78px; height: 78px;
+  transform: translate(-50%, 0);
+  border-radius: 50%;
+  border: 2px solid rgba(230, 184, 102, 0.6);
+  animation: ripple 2.4s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes gentlePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(230, 184, 102, 0.0); }
+  50% { box-shadow: 0 0 0 6px rgba(230, 184, 102, 0.12); }
+}
+@keyframes wiggle {
+  0%, 88%, 100% { transform: rotate(0deg); }
+  90% { transform: rotate(-9deg); }
+  93% { transform: rotate(8deg); }
+  96% { transform: rotate(-5deg); }
+}
+@keyframes ripple {
+  0% { opacity: 0.7; transform: translate(-50%, 0) scale(1); }
+  70% { opacity: 0; transform: translate(-50%, 0) scale(1.9); }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .drop-zone, .drop-zone .cam-badge, .drop-zone::after { animation: none; }
+}
+
+input[type="file"] { display: none; }
+
+/* ---------- Selected-files preview + progress ---------- */
+.selected-list { text-align: left; margin: 14px 0; }
+.selected-item {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px; padding: 8px 10px; margin-bottom: 8px; font-size: 0.9rem;
+}
+.selected-item .thumb { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+.selected-item .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.selected-item .status { font-size: 0.8rem; }
+.selected-item .status.ok { color: var(--success); }
+.selected-item .status.err { color: var(--danger); }
+
+.progress { height: 8px; background: rgba(255,255,255,0.14); border-radius: 4px; overflow: hidden; margin-top: 4px; }
+.progress > span { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.2s ease; }
+
+.toast { margin-top: 16px; padding: 12px; border-radius: 14px; font-size: 0.95rem; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.toast.success { background: rgba(107, 191, 107, 0.18); color: var(--success); border: 1px solid rgba(107,191,107,0.3); }
+.toast.error { background: rgba(224, 104, 92, 0.18); color: var(--danger); border: 1px solid rgba(224,104,92,0.3); }
+
+/* ============================================================
+   GUEST GALLERY
+   ============================================================ */
+.gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.gallery-grid .cell {
+  aspect-ratio: 1 / 1; background: rgba(0,0,0,0.3); border-radius: 14px; overflow: hidden; cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.1); transition: transform 0.15s ease;
+}
+.gallery-grid .cell:active { transform: scale(0.96); }
+.gallery-grid .cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gallery-empty { text-align: center; color: var(--text-dim); padding: 60px 20px; }
+
+.lightbox {
+  position: fixed; inset: 0; background: rgba(20, 12, 26, 0.85);
+  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+  display: none; align-items: center; justify-content: center; flex-direction: column; z-index: 200; padding: 20px;
+}
+.lightbox.open { display: flex; }
+.lightbox img { max-width: 100%; max-height: 80vh; border-radius: 14px; box-shadow: var(--glass-shadow); }
+.lightbox .actions { margin-top: 18px; display: flex; gap: 12px; }
+.lightbox .close { position: absolute; top: 16px; right: 20px; font-size: 2rem; color: #fff; cursor: pointer; background: none; border: none; }
+
+.load-more-wrap { text-align: center; margin-top: 20px; }
+
+/* ============================================================
+   LIVE WALL (Option A) — projector, fullscreen
+   ============================================================ */
+.wall {
+  display: grid;
+  grid-template-columns: 78% 22%;
+  height: 100vh; width: 100vw; overflow: hidden;
+}
+.photo-area { padding: calc(var(--gap) + 4px); display: flex; flex-direction: column; min-width: 0; }
+.photo-area .heading {
+  font-size: 2.2vw; font-weight: 600; letter-spacing: 0.06em;
+  color: var(--accent); margin-bottom: var(--gap); text-align: center;
+  text-shadow: 0 2px 20px rgba(217, 164, 65, 0.4);
+}
+.photo-grid {
+  flex: 1 1 0; display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: var(--gap); min-height: 0; overflow: hidden;
+}
+.photo-grid .photo {
+  /* min-height:0 lets the grid track control the height so portrait images
+     don't push the 3rd row off-screen. */
+  min-height: 0; min-width: 0; height: 100%; width: 100%;
+  background: rgba(0,0,0,0.35); border-radius: 16px; overflow: hidden; position: relative;
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 6px 22px rgba(0,0,0,0.5);
+  animation: popIn 0.6s ease both;
+}
+.photo-grid .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+@keyframes popIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+
+.wall-empty {
+  grid-column: 1 / -1; grid-row: 1 / -1;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  color: var(--text-dim); font-size: 1.5vw; font-family: var(--font-display);
+}
+
+/* Frosted-glass QR panel */
+.qr-panel {
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(30px); backdrop-filter: blur(30px);
+  border-left: 1px solid var(--glass-border);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 2vw; text-align: center;
+}
+.qr-panel .couple {
+  font-size: 2.4vw; color: var(--accent); margin-bottom: 0.15em;
+  text-shadow: 0 2px 18px rgba(217, 164, 65, 0.4);
+}
+.qr-panel .subtitle {
+  font-family: var(--font-body); font-size: 0.95vw; color: var(--text-dim);
+  margin-bottom: 1.6vw; letter-spacing: 0.28em; text-transform: uppercase;
+}
+/* QR stays on a SOLID white card so it's always crisp & scannable */
+.qr-card { background: #fff; padding: 1vw; border-radius: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.55); }
+.qr-card img, .qr-card canvas, .qr-card > div { display: block; width: 12vw; height: 12vw; }
+.qr-panel .scan-cta { margin-top: 1.4vw; font-size: 1.4vw; font-weight: 600; font-family: var(--font-display); }
+.qr-panel .scan-sub { font-family: var(--font-body); margin-top: 0.4em; font-size: 0.82vw; color: var(--text-dim); max-width: 90%; }

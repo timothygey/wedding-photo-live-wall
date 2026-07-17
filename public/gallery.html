@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Timothy &amp; Megumi — Photo Gallery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/styles.css?v=4" />
+</head>
+<body>
+  <div class="guest-wrap">
+    <div class="guest-header">
+      <div class="couple">Timothy &amp; Megumi</div>
+      <div class="date">Photo Gallery</div>
+    </div>
+
+    <div class="tab-bar tab-bar-single">
+      <a class="btn btn-primary" href="index.html">📤 Back to Upload</a>
+    </div>
+
+    <div class="gallery-grid" id="galleryGrid"></div>
+    <div class="gallery-empty" id="emptyState" style="display:none;">
+      No photos yet — be the first to share one! 📸
+    </div>
+
+    <div class="load-more-wrap">
+      <button class="btn btn-secondary" id="loadMoreBtn" style="display:none;">Load more</button>
+    </div>
+  </div>
+
+  <!-- Lightbox for enlarged view + download -->
+  <div class="lightbox" id="lightbox">
+    <button class="close" id="lightboxClose">&times;</button>
+    <img id="lightboxImg" src="" alt="Photo" />
+    <div class="actions">
+      <a class="btn btn-primary" id="downloadBtn" href="#" download>⬇️ Download</a>
+    </div>
+  </div>
+
+<script type="module" src="js/gallery.js?v=4"></script>
+</body>
+</html>

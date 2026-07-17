@@ -1,0 +1,27 @@
+rules_version = '2';
+
+// ============================================================
+// Firestore security rules for the Wedding Photo Wall.
+//
+// The 'photos' collection holds one document per processed photo,
+// created ONLY by the Cloud Function (Admin SDK bypasses these rules).
+//
+// Guests / wall / gallery may READ photos to display them, but clients
+// may NOT create, edit, or delete documents directly — all writes flow
+// through the trusted backend. This prevents spoofed or malicious docs.
+// ============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /photos/{photoId} {
+      allow read: if true;                 // wall + gallery read the feed
+      allow create, update, delete: if false; // only the backend writes
+    }
+
+    // Deny everything else by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

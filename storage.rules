@@ -1,0 +1,39 @@
+rules_version = '2';
+
+// ============================================================
+// Cloud Storage security rules for the Wedding Photo Wall.
+//
+// Layout:
+//   /uploads/{fileName}    -> raw originals guests upload (function reads/deletes)
+//   /processed/{fileName}  -> thumbnail + display versions the function writes
+//
+// Guests may WRITE originals into /uploads (image only, <= 50MB) but may
+// NOT read them back. Everyone may READ /processed images (wall + gallery).
+// Only the backend (Cloud Function, which bypasses these rules via the
+// Admin SDK) writes to /processed.
+// ============================================================
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // --- Raw uploads from guests ---
+    match /uploads/{fileName} {
+      // Anyone can upload an image up to 50MB. No read (privacy: originals
+      // are transient and deleted after processing).
+      allow create: if request.resource.size <= 50 * 1024 * 1024
+                    && request.resource.contentType.matches('image/.*');
+      allow read, update, delete: if false;
+    }
+
+    // --- Processed images (thumbnail + display) served to everyone ---
+    match /processed/{fileName} {
+      allow read: if true;              // wall + gallery display these
+      allow write: if false;           // only the backend writes here
+    }
+
+    // Deny everything else by default.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

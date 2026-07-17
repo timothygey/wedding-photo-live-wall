@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Timothy &amp; Megumi — Live Photo Wall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/styles.css?v=3" />
+</head>
+<body>
+  <div class="wall">
+    <!-- LEFT: live photo grid (latest 15) -->
+    <div class="photo-area">
+      <div class="heading">✦ Timothy &amp; Megumi · Live Photo Wall ✦</div>
+      <div class="photo-grid" id="grid">
+        <div class="wall-empty" id="emptyState">
+          Waiting for the first photo… Scan the code to share yours! 📸
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: QR panel -->
+    <div class="qr-panel">
+      <div class="couple">Timothy &amp; Megumi</div>
+      <div class="subtitle">8.8.2026</div>
+      <div class="qr-card"><div id="qrCanvas"></div></div>
+      <div class="scan-cta">📸 Scan to Share!</div>
+      <div class="scan-sub">Point your phone camera here to upload the photos you've taken today &amp; browse the gallery.</div>
+    </div>
+  </div>
+
+  <!-- QR code library (self-contained UMD, no canvas quirks) -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+  <script type="module" src="js/wall.js?v=2"></script>
+</body>
+</html>
