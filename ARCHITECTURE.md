@@ -3,7 +3,7 @@
 A live photo-sharing wall for a wedding. Guests scan a QR code to upload
 photos from their phones/cameras; new photos appear on a projector screen in
 real time, and everyone can browse the full gallery. Photos auto-delete
-after 24 hours.
+after 1 week.
 
 - **Firebase project:** `wedding-photo-wall-3ace4`
 - **Region:** `asia-southeast1` (Singapore) — chosen to keep functions close to the Firestore/Storage data
@@ -91,7 +91,7 @@ upload.js
 ```
 
 Two supporting functions:
-- **`cleanupExpired`** — runs on a schedule (hourly). Deletes any `photos` doc (and its two Storage files) older than `RETENTION_HOURS` (24h), keeping storage near-empty and the event self-cleaning.
+- **`cleanupExpired`** — runs on a schedule (hourly). Deletes any `photos` doc (and its two Storage files) older than `RETENTION_HOURS` (currently 168h = 1 week), keeping storage small and the event self-cleaning.
 - **`deletePhoto`** — callable function used by the gallery's hidden admin mode (`?admin=<key>`). Requires the secret `ADMIN_KEY`; deletes the Firestore doc + both processed files immediately so moderators can remove inappropriate photos live.
 
 ---
@@ -112,6 +112,62 @@ spoofing photo documents or injecting arbitrary files into the public feed.
 - Everything else: denied by default.
 
 **Admin deletion** is protected by a shared-secret string (`ADMIN_KEY` in `functions/index.js`) passed as a query param/callable argument — not real user authentication. It's "good enough" for a single-event, trusted-guest-list context, but the key must stay out of anything guests can see (see `DEPLOYMENT.md` for the current admin link).
+
+---
+
+## Photo retention & auto-delete
+
+**How the retention timer works** (currently set to 168h = 1 week)
+
+- Each photo's lifetime is tied to a single field on its Firestore doc: `uploadedAt`.
+  It's set with a **server timestamp at the moment `processUpload` finishes and
+  creates the doc** — i.e. a few seconds *after* the guest's upload lands and the
+  image has been converted/resized. It is **per-photo**, not a global timer, and
+  does **not** start when the guest first taps upload.
+- A scheduled function, `cleanupExpired`, runs **every 60 minutes**. Each run
+  deletes any photo whose `uploadedAt` is older than `RETENTION_HOURS` (currently
+  **168** = 1 week): it removes the thumbnail file, the display file (Storage), and the
+  Firestore doc. Removing the doc makes the photo vanish from the wall + gallery
+  automatically (their live listeners react to the removal).
+- **Practical nuance:** because cleanup runs hourly rather than continuously, a
+  photo is deleted on the **next hourly sweep after it crosses the retention
+  window** — so in practice, at the current 168h setting, a photo lives
+  **between 168 and ~169 hours** (and, more generally, up to ~59 min beyond
+  whatever `RETENTION_HOURS` is set to).
+- The bulky **original** in `/uploads/` is deleted **immediately** after
+  processing — it is *not* part of the retention window; only the processed
+  thumbnail + display versions are.
+- A **failed** upload (errored during processing, so no doc was ever created) is
+  not tracked by `cleanupExpired`; the orphaned original just sits privately in
+  `/uploads/` (not readable by anyone).
+
+**Changing the retention window**
+
+Edit the single constant `RETENTION_HOURS` in `functions/index.js`, then
+`firebase deploy --only functions`. Examples: `24` = 1 day, `72` = 3 days,
+`168` = 1 week (the current setting).
+
+**What a longer window costs** (e.g. 24h → 168h / 1 week)
+
+Longer retention does **not** change how many photos exist — only how long they
+sit in storage. So the guaranteed extra cost is tiny:
+
+- **Storage volume — a few cents.** Storage is billed per GB-month (~$0.026/GB/mo
+  in `asia-southeast1`). A busy wedding of ~3,000 photos ≈ ~9 GB (thumbnail +
+  display). Held 1 day ≈ **$0.008**; held 7 days ≈ **$0.055**. So extending to a
+  full week costs roughly **5 cents**.
+- **Download bandwidth — variable, demand-driven.** Keeping photos alive longer
+  gives guests more time to view/download them. Egress is ~$0.12/GB — this is the
+  same per-view cost paid whenever anyone loads an image, not a penalty of
+  retention itself, but a longer window creates more opportunity for it. Heavy
+  full-res downloading over the week could add a few dollars; light browsing far
+  less.
+- **Functions & Firestore — no change.** `cleanupExpired` runs hourly regardless,
+  and the doc storage is trivial.
+
+**Bottom line:** extending retention to a week is essentially free (pennies of
+storage); the only way it becomes a few dollars is if the extra days drive a lot
+more full-res downloading.
 
 ---
 

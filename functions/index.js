@@ -49,7 +49,7 @@ const DISPLAY_QUALITY = 88;     // JPEG quality for display version
 // Secret key required to delete photos. CHANGE THIS to your own private
 // value; anyone with it can remove photos, so keep it off the wall/screen.
 const ADMIN_KEY = "megumi-timothy-8826-admin";
-const RETENTION_HOURS = 24;     // auto-delete after this many hours
+const RETENTION_HOURS = 168;    // auto-delete after this many hours (168 = 1 week)
 
 /* ============================================================
  * 1. Process a newly uploaded original.

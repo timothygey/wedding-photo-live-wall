@@ -3,7 +3,7 @@
 A live photo-sharing wall for a wedding. Guests scan a QR code on the
 projector screen to upload photos from their phones/DSLRs; the newest photos
 appear on the big screen in real time, and everyone can browse the full
-gallery. Photos auto-delete after 24 hours.
+gallery. Photos auto-delete after 1 week.
 
 - **Platform:** Firebase (Hosting + Firestore + Cloud Storage + Cloud Functions)
 - **Project:** `wedding-photo-wall-3ace4`
@@ -46,7 +46,7 @@ wedding-app/
 3. The **wall** (`limit 15`) and **gallery** (all) subscribe to `photos` and
    update live via Firestore listeners.
 4. `cleanupExpired` runs hourly and deletes photos (docs + files) older than
-   24 hours.
+   1 week.
 
 ---
 
@@ -114,7 +114,7 @@ Uploads, functions, Firestore and Storage all run locally.
 | Photos on the wall (currently 15) | `WALL_PHOTO_LIMIT` in `public/js/firebase-init.js` |
 | Max upload size (currently 50MB) | `MAX_UPLOAD_BYTES` in `firebase-init.js` **and** `storage.rules` |
 | Compression quality/size | `DISPLAY_*` / `THUMB_*` constants in `functions/index.js` |
-| Retention (currently 24h) | `RETENTION_HOURS` in `functions/index.js` |
+| Retention (currently 1 week / 168h) | `RETENTION_HOURS` in `functions/index.js` |
 
 ---
 
