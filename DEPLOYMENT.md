@@ -60,7 +60,8 @@ Opens the Hosting emulator (default `http://localhost:5000`) and an Emulator UI 
 |---|---|
 | Couple names / date / copy | `public/*.html` |
 | Colours / branding | `:root` CSS variables at the top of `public/css/styles.css` |
-| Number of photos shown on the wall (currently 15) | `WALL_PHOTO_LIMIT` in `public/js/firebase-init.js` |
+| Max frames kept on the (auto-scrolling) wall (currently 120) | `WALL_MAX_FRAMES` in `public/js/firebase-init.js` |
+| Wall auto-scroll speed (px/sec) | `SCROLL_SPEED_PX_PER_SEC` in `public/js/wall.js` |
 | Max upload size (currently 50MB) | `MAX_UPLOAD_BYTES` in `firebase-init.js` **and** the matching limit in `storage.rules` |
 | Compression quality/size | `THUMB_*` / `DISPLAY_*` constants in `functions/index.js` |
 | Photo retention window (currently 1 week / 168h) | `RETENTION_HOURS` in `functions/index.js` |

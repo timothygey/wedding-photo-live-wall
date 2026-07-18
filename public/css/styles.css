@@ -324,13 +324,26 @@ input[type="file"] { display: none; }
     radial-gradient(1100px 780px at 16% 12%, rgba(240, 217, 168, 0.22), transparent 60%),
     linear-gradient(to bottom, rgba(251, 247, 240, 0.34) 0%, rgba(243, 237, 228, 0.46) 100%);
 }
-.photo-area { padding: calc(var(--gap) + 4px); display: flex; flex-direction: column; min-width: 0; }
-.photo-grid {
-  flex: 1 1 0; display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  grid-template-rows: repeat(3, minmax(0, 1fr));
-  gap: var(--gap); min-height: 0; overflow: hidden;
+.photo-area {
+  padding: calc(var(--gap) + 4px);
+  min-width: 0;
+  /* Vertically scrolling viewport (driven programmatically by wall.js; the
+     scrollbar is hidden). Rows beyond the first ~3 scroll into view. */
+  overflow: hidden;
+  position: relative;
 }
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  /* Row height sized so ~3 rows fill the screen (same density as before);
+     any further rows extend below and are revealed by the auto-scroll. */
+  grid-auto-rows: calc((100vh - 2 * (var(--gap) + 4px) - 2 * var(--gap)) / 3);
+  gap: var(--gap);
+}
+/* Pause the Ken Burns zoom on frames scrolled out of view (set by an
+   IntersectionObserver in wall.js) so many tiles stay smooth on the projector. */
+.photo.kb-paused img,
+.photo.kb-paused .blessing-card { animation-play-state: paused; }
 .photo-grid .photo {
   /* min-height:0 lets the grid track control the height so portrait images
      don't push the 3rd row off-screen. */
@@ -365,7 +378,10 @@ input[type="file"] { display: none; }
 }
 
 .wall-empty {
-  grid-column: 1 / -1; grid-row: 1 / -1;
+  grid-column: 1 / -1;
+  /* Fill the viewport height when it's the only thing showing, so the message
+     centers on screen rather than in a single short grid row. */
+  min-height: calc(100vh - 2 * (var(--gap) + 4px));
   display: flex; align-items: center; justify-content: center; text-align: center;
   color: rgba(70, 55, 40, 0.78); font-size: 1.5vw; font-family: var(--font-display);
   text-shadow: 0 1px 2px rgba(255, 252, 245, 0.5);

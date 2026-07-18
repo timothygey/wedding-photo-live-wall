@@ -63,7 +63,7 @@ wedding-app/
       ├─ upload.js           # Client-side validation + resumable upload
       ├─ gallery.js          # Gallery grid + admin delete calls
       ├─ blessing.js         # Blessing form: live word limiter + postBlessing call
-      └─ wall.js             # Live wall grid (Firestore listener, limit 15)
+      └─ wall.js             # Auto-scrolling live wall grid (Firestore listener)
 ```
 
 ---
@@ -89,7 +89,7 @@ upload.js
                                 - delete original from /uploads/
                                                                                     │
                                                                                     ▼ (onSnapshot listener)
-                                                                        wall.js (limit 15) / gallery.js (all)
+                                                                        wall.js (auto-scroll) / gallery.js (all)
                                                                         render live as new docs arrive
 ```
 
@@ -205,10 +205,10 @@ and it disappears everywhere.
 frame. A frame is ~280×340px on a 1080p projector, so as the word count climbs
 the auto-fit font shrinks; past ~25–30 words it drops below ~24px — too small
 to read across a room. 25 words keeps short messages large and the longest ones
-still comfortably legible. It's also forward-compatible with a future
-**auto-scroll** wall: moving text is harder to read and each frame has limited
-on-screen dwell time, so a tight cap stays right (a 25-word blessing needs ~12s
-of readable dwell at ~120 wpm). Limits live in `firebase-init.js`
+still comfortably legible. It also suits the **auto-scrolling** wall (below):
+moving text is harder to read and each frame has limited on-screen dwell time,
+so a tight cap stays right (a 25-word blessing needs ~12s of readable dwell at
+~120 wpm, which the default scroll speed provides). Limits live in `firebase-init.js`
 (`BLESSING_WORD_LIMIT` / `BLESSING_CHAR_LIMIT` / `BLESSING_NAME_LIMIT`) for the
 client **and** are re-enforced in `postBlessing`.
 
@@ -226,6 +226,30 @@ the wall and gallery therefore re-fit each blessing on `document.fonts.ready`.
   the lightbox (no download button).
 - Rendered with `textContent` (never `innerHTML`), so a blessing can't inject
   markup/script.
+
+---
+
+## Live wall auto-scroll
+
+The projector wall (`wall.html` / `wall.js`) is no longer limited to one
+screenful. It shows up to `WALL_MAX_FRAMES` (default 120) newest photos +
+blessings in a 5-column grid whose rows are sized so ~3 fill the screen; the
+rest extend below.
+
+- **Scroll loop:** a `requestAnimationFrame` loop advances `photo-area.scrollTop`
+  down at `SCROLL_SPEED_PX_PER_SEC` (default 45 px/s, in `wall.js`). On reaching
+  the bottom it resets to the top and continues. If there's less than one
+  screenful, it stays put.
+- **No jump on new uploads:** frames are inserted newest-first at the top; when
+  mid-scroll, the scroll position is nudged by the inserted height so the visible
+  frames don't shift. At the very top, a new frame simply appears.
+- **Performance:** the Ken Burns zoom is **paused on off-screen frames** via an
+  `IntersectionObserver` (root = the scroll viewport), so 120 tiles stay smooth
+  on the projector laptop. `reorder` only moves out-of-place frames rather than
+  re-appending everything each update.
+- **Cap rationale:** `WALL_MAX_FRAMES` bounds DOM/GPU work; older frames beyond
+  it drop off the wall but remain in the gallery and Firestore until the 1-week
+  cleanup. Raise it if the driving machine handles more.
 
 ---
 

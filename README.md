@@ -43,7 +43,7 @@ wedding-app/
 2. `processUpload` fires automatically: converts HEIC→JPEG, makes a ~400KB
    thumbnail + a high-quality ~5MB display version into `/processed/`,
    deletes the bulky original, and creates a `photos` doc in Firestore.
-3. The **wall** (`limit 15`) and **gallery** (all) subscribe to `photos` and
+3. The **wall** (auto-scrolling, up to `WALL_MAX_FRAMES`) and **gallery** (all) subscribe to `photos` and
    update live via Firestore listeners.
 4. `cleanupExpired` runs hourly and deletes photos (docs + files) older than
    1 week.
@@ -111,7 +111,8 @@ Uploads, functions, Firestore and Storage all run locally.
 |-----------------|-------|
 | Couple names / date | `public/*.html` (headings) + `wall.js` isn't needed |
 | Colours / branding | `:root` variables at top of `public/css/styles.css` |
-| Photos on the wall (currently 15) | `WALL_PHOTO_LIMIT` in `public/js/firebase-init.js` |
+| Max frames on the (auto-scrolling) wall | `WALL_MAX_FRAMES` in `public/js/firebase-init.js` |
+| Wall auto-scroll speed | `SCROLL_SPEED_PX_PER_SEC` in `public/js/wall.js` |
 | Max upload size (currently 50MB) | `MAX_UPLOAD_BYTES` in `firebase-init.js` **and** `storage.rules` |
 | Compression quality/size | `DISPLAY_*` / `THUMB_*` constants in `functions/index.js` |
 | Retention (currently 1 week / 168h) | `RETENTION_HOURS` in `functions/index.js` |

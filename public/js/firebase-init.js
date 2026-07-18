@@ -28,7 +28,7 @@ export const functions = getFunctions(app, "asia-southeast1");
 
 // ---- Shared app-wide constants ----
 export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024; // 50 MB per photo
-export const WALL_PHOTO_LIMIT = 15; // photos visible on the projector wall
+export const WALL_MAX_FRAMES = 120; // max frames kept on the auto-scrolling wall (performance cap; older ones remain in the gallery)
 export const PHOTOS_COLLECTION = "photos"; // Firestore collection name
 export const UPLOADS_PATH = "uploads"; // where guests upload originals
 
