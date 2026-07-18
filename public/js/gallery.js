@@ -111,7 +111,12 @@ function makeCell(id, data) {
       card.appendChild(from);
     }
     cell.appendChild(card);
+    // Fit once laid out, and again after the web font loads (fallback-font
+    // metrics otherwise lock in the wrong size).
     requestAnimationFrame(() => fitCell(cell));
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => fitCell(cell));
+    }
   } else {
     const img = document.createElement("img");
     img.loading = "lazy";

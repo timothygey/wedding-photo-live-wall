@@ -35,7 +35,7 @@ export const UPLOADS_PATH = "uploads"; // where guests upload originals
 // ---- Blessing (text message) limits ----
 // Kept short so the auto-scaled text stays readable on the projector wall
 // (see ARCHITECTURE.md). Enforced client-side AND in the postBlessing function.
-export const BLESSING_WORD_LIMIT = 30;   // max words per blessing
+export const BLESSING_WORD_LIMIT = 25;   // max words per blessing
 export const BLESSING_CHAR_LIMIT = 200;  // hard character backstop
 export const BLESSING_NAME_LIMIT = 24;   // max chars for the optional "from" name
 

@@ -244,7 +244,7 @@ export const deletePhoto = onCall(async (request) => {
  *    limits) and written via the Admin SDK so guests still cannot write
  *    to Firestore directly — same trust model as photos.
  * ============================================================ */
-const BLESSING_WORD_LIMIT = 30;
+const BLESSING_WORD_LIMIT = 25;
 const BLESSING_CHAR_LIMIT = 200;
 const BLESSING_NAME_LIMIT = 24;
 

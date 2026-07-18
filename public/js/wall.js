@@ -100,8 +100,13 @@ function addPhoto(id, data) {
       card.appendChild(from);
     }
     el.appendChild(card);
-    // Fit the text to the frame once it's laid out.
+    // Fit once laid out — and AGAIN after the web font loads. Measuring with
+    // the fallback serif (before "Cormorant Garamond" arrives) has different
+    // metrics and picks the wrong, often far-too-small, size.
     requestAnimationFrame(() => fitBlessing(el));
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => fitBlessing(el));
+    }
   } else {
     const img = document.createElement("img");
     img.src = data.thumbnailURL;

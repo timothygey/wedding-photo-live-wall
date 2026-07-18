@@ -96,7 +96,7 @@ upload.js
 Three supporting functions:
 - **`cleanupExpired`** — runs on a schedule (hourly). Deletes any `photos` doc (and its two Storage files, if any) older than `RETENTION_HOURS` (currently 168h = 1 week), keeping storage small and the event self-cleaning.
 - **`deletePhoto`** — callable function used by the gallery's hidden admin mode (`?admin=<key>`). Requires the secret `ADMIN_KEY`; deletes the Firestore doc + both processed files immediately so moderators can remove inappropriate photos (or blessings) live.
-- **`postBlessing`** — callable function behind the blessing page. Validates a short text message server-side (≤30 words, ≤200 chars; optional name ≤24 chars) and writes a `type: "blessing"` doc via the Admin SDK. No Storage files are involved.
+- **`postBlessing`** — callable function behind the blessing page. Validates a short text message server-side (≤25 words, ≤200 chars; optional name ≤24 chars) and writes a `type: "blessing"` doc via the Admin SDK. No Storage files are involved.
 
 See **Blessings** below for how text messages share the same collection, listeners, retention, and admin tooling as photos.
 
@@ -201,15 +201,21 @@ Because there are no Storage files, `cleanupExpired` and `deletePhoto` simply
 skip the file deletions (guarded by `if (data.displayPath)`), delete the doc,
 and it disappears everywhere.
 
-**Word limit — why 30.** The wall auto-scales each blessing's text to fit its
-frame. A frame is ~280×340px on a 1080p projector, so past ~30 words the
-auto-fit font drops below ~24px — too small to read across a room. 30 words
-keeps short messages large and long ones still legible. It's also
-forward-compatible with a future **auto-scroll** wall: moving text is harder to
-read and each frame has limited on-screen dwell time, so a tight cap stays
-right (a 30-word blessing needs ~15s of readable dwell at ~120 wpm). Limits live
-in `firebase-init.js` (`BLESSING_WORD_LIMIT` / `BLESSING_CHAR_LIMIT` /
-`BLESSING_NAME_LIMIT`) for the client **and** are re-enforced in `postBlessing`.
+**Word limit — why 25.** The wall auto-scales each blessing's text to fit its
+frame. A frame is ~280×340px on a 1080p projector, so as the word count climbs
+the auto-fit font shrinks; past ~25–30 words it drops below ~24px — too small
+to read across a room. 25 words keeps short messages large and the longest ones
+still comfortably legible. It's also forward-compatible with a future
+**auto-scroll** wall: moving text is harder to read and each frame has limited
+on-screen dwell time, so a tight cap stays right (a 25-word blessing needs ~12s
+of readable dwell at ~120 wpm). Limits live in `firebase-init.js`
+(`BLESSING_WORD_LIMIT` / `BLESSING_CHAR_LIMIT` / `BLESSING_NAME_LIMIT`) for the
+client **and** are re-enforced in `postBlessing`.
+
+**Font-load caveat:** the auto-fit measures text to pick a size, so it must run
+*after* the "Cormorant Garamond" web font loads — otherwise it measures with the
+fallback serif's metrics and locks in the wrong (usually too-small) size. Both
+the wall and gallery therefore re-fit each blessing on `document.fonts.ready`.
 
 **Rendering**
 - **Wall:** a cream serif "note" card; JS (`fitBlessing`) binary-searches the

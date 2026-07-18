@@ -64,7 +64,7 @@ Opens the Hosting emulator (default `http://localhost:5000`) and an Emulator UI 
 | Max upload size (currently 50MB) | `MAX_UPLOAD_BYTES` in `firebase-init.js` **and** the matching limit in `storage.rules` |
 | Compression quality/size | `THUMB_*` / `DISPLAY_*` constants in `functions/index.js` |
 | Photo retention window (currently 1 week / 168h) | `RETENTION_HOURS` in `functions/index.js` |
-| Blessing word/char limits (currently 30 words / 200 chars / 24-char name) | `BLESSING_WORD_LIMIT` etc. in `firebase-init.js` **and** the matching constants in `functions/index.js` |
+| Blessing word/char limits (currently 25 words / 200 chars / 24-char name) | `BLESSING_WORD_LIMIT` etc. in `firebase-init.js` **and** the matching constants in `functions/index.js` |
 | Admin delete key | `ADMIN_KEY` in `functions/index.js` — redeploy functions after changing, and update anyone who uses the admin link |
 
 Any change to `functions/index.js` requires `firebase deploy --only functions`. Any change to `storage.rules`/`firestore.rules` requires the rules deploy command. Frontend-only changes only need `--only hosting`.
