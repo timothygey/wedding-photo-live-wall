@@ -106,10 +106,62 @@ html, body {
 }
 
 .tab-bar { display: flex; gap: 10px; margin-bottom: 22px; }
-.tab-bar .btn { flex: 1; }
+/* Fixed height so every tab-bar button is the SAME size/height/position on
+   every page, regardless of label length (e.g. "Share your well-wishes"
+   wrapping to two lines never changes the row height). */
+.tab-bar .btn {
+  flex: 1;
+  height: 54px;
+  padding: 4px 12px;
+  font-size: 0.95rem;
+  line-height: 1.15;
+}
 /* When only one button remains, center it at a comfortable width. */
 .tab-bar-single { justify-content: center; }
 .tab-bar-single .btn { flex: 0 1 auto; min-width: 60%; }
+
+/* ---- Instagram-style sparkle button (shimmering gold text + twinkling stars) ---- */
+.sparkle-btn { position: relative; overflow: visible; }
+.sparkle-btn .sparkle-text {
+  background: linear-gradient(100deg, #a9762e 0%, #d9a441 30%, #f6e3b0 48%, #d9a441 66%, #a9762e 100%);
+  background-size: 220% auto;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  text-shadow: 0 1px 2px rgba(90, 60, 15, 0.18);
+  animation: sparkleShimmer 3s linear infinite;
+}
+@keyframes sparkleShimmer { to { background-position: 220% center; } }
+/* Two four-point stars that twinkle around the label */
+.sparkle-btn::before, .sparkle-btn::after {
+  content: "\2726";
+  position: absolute;
+  color: #f4d489;
+  pointer-events: none;
+  opacity: 0;
+  text-shadow: 0 0 6px rgba(233, 200, 120, 0.95);
+  animation: sparkleTwinkle 2.6s ease-in-out infinite;
+}
+.sparkle-btn::before { top: 7px; left: 15px; font-size: 0.72em; animation-delay: 0.3s; }
+.sparkle-btn::after  { bottom: 8px; right: 17px; font-size: 0.5em; animation-delay: 1.5s; }
+@keyframes sparkleTwinkle {
+  0%, 100% { opacity: 0; transform: scale(0.2) rotate(0deg); }
+  35% { opacity: 1; transform: scale(1) rotate(90deg); }
+  55% { opacity: 0.7; transform: scale(0.85) rotate(115deg); }
+  70% { opacity: 0; transform: scale(0.3) rotate(160deg); }
+}
+/* Text-sized camera icon at the end of a button, wiggling like the upload
+   page's "Tap to add photos" camera badge (reuses the same @keyframes wiggle). */
+.cam-wiggle {
+  display: inline-block;
+  margin-left: 0.15em;
+  animation: wiggle 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sparkle-btn .sparkle-text { animation: none; }
+  .sparkle-btn::before, .sparkle-btn::after { animation: none; opacity: 0; }
+  .cam-wiggle { animation: none; }
+}
 
 /* ---------- Glass card ---------- */
 .upload-card {
