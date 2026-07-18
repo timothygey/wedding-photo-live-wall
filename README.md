@@ -150,4 +150,6 @@ Uploads, functions, Firestore and Storage all run locally.
 - [ ] With 16+ frames on the wall, it **auto-scrolls** and loops back to the top.
 - [ ] Gallery shows all photos/blessings; tap → enlarge + download (photos) works.
 - [ ] Budget alert configured in Google Cloud console.
+- [ ] **Cost guard:** admin **🔒 Pause / 🔓 Resume** toggles the paused banner + disables uploads/downloads (see `DEPLOYMENT.md` → Testing & verification).
+- [ ] Budget connected to the `budget-alerts` Pub/Sub topic (auto-lock at S$25).
 ```

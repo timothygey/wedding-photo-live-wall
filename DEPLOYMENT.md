@@ -114,6 +114,51 @@ lock within seconds; clear it from the admin toggle.
 
 ---
 
+## Testing & verification
+
+Recipes to re-confirm the key backend features (all verified **2026-07-18**).
+Callables live at `https://asia-southeast1-wedding-photo-wall-3ace4.cloudfunctions.net/<name>`.
+`K` below is the admin key.
+
+### Cost guard — manual toggle (B)  ✅ verified
+- **In the app:** open `/gallery?admin=<key>` → **🔒 Pause sharing** → guest pages show the banner and disable uploads / well-wishes / downloads; **🔓 Resume sharing** clears it.
+- **Via CLI:**
+  ```bash
+  K=megumi-timothy-8826-admin
+  # wrong key → rejected
+  curl -s -XPOST .../setGuard -H 'Content-Type: application/json' \
+    -d '{"data":{"locked":true,"adminKey":"nope"}}'
+  #   → {"error":{... "PERMISSION_DENIED", "Invalid admin key."}}
+  # lock, then unlock (ALWAYS finish unlocked)
+  curl -s -XPOST .../setGuard -H 'Content-Type: application/json' \
+    -d "{\"data\":{\"locked\":true,\"adminKey\":\"$K\"}}"   #  → {"result":{"success":true,"locked":true}}
+  curl -s -XPOST .../setGuard -H 'Content-Type: application/json' \
+    -d "{\"data\":{\"locked\":false,\"adminKey\":\"$K\"}}"  #  → locked:false
+  ```
+
+### Cost guard — automatic budget trip (A)  ✅ verified
+1. Publish a fake budget message to the `budget-alerts` topic (Pub/Sub → Topics → Publish):
+   `{"costAmount":25,"budgetAmount":25,"currencyCode":"SGD"}`
+2. Confirm it fired: `firebase functions:log --only budgetGuard` — expect:
+   ```
+   Budget alert: cost=25 budget=25 SGD
+   Cost 25SGD >= 25 → cost guard LOCKED.
+   ```
+   (A *real* budget notification logs `cost=0 … SGD` and correctly does nothing, which also confirms the live budget→topic link.)
+3. Guest pages show the paused banner → **clear the lock** via the admin Resume button (or the `setGuard` unlock above).
+
+### Blessing validation (`postBlessing`)  ✅ verified
+```bash
+# 26 words (> 25) → rejected
+curl -s -XPOST .../postBlessing -H 'Content-Type: application/json' \
+  -d '{"data":{"message":"a a a a a a a a a a a a a a a a a a a a a a a a a a"}}'
+#   → {"error":{... "Please keep it to 25 words or fewer."}}
+# >200 chars → "Please keep it under 200 characters."
+```
+A valid blessing returns `{"result":{"success":true,"id":"…"}}` and appears on the wall/gallery. Delete test docs via the admin UI, or `deletePhoto` (needs `photoId` + admin key).
+
+---
+
 ## Troubleshooting
 
 | Problem | Fix |
