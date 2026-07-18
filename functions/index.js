@@ -239,6 +239,53 @@ export const deletePhoto = onCall(async (request) => {
 });
 
 /* ============================================================
+ * 4. Guest blessing: create a text "blessing" doc.
+ *    Callable from the blessing page. Validated server-side (word/char
+ *    limits) and written via the Admin SDK so guests still cannot write
+ *    to Firestore directly — same trust model as photos.
+ * ============================================================ */
+const BLESSING_WORD_LIMIT = 30;
+const BLESSING_CHAR_LIMIT = 200;
+const BLESSING_NAME_LIMIT = 24;
+
+export const postBlessing = onCall(async (request) => {
+  const { message, from } = request.data || {};
+
+  if (typeof message !== "string" || !message.trim()) {
+    throw new HttpsError("invalid-argument", "A blessing message is required.");
+  }
+
+  // Normalise whitespace (collapse runs/newlines to single spaces) and trim.
+  const cleanMsg = message.replace(/\s+/g, " ").trim();
+  if (!cleanMsg) {
+    throw new HttpsError("invalid-argument", "A blessing message is required.");
+  }
+  if (cleanMsg.length > BLESSING_CHAR_LIMIT) {
+    throw new HttpsError("invalid-argument", `Please keep it under ${BLESSING_CHAR_LIMIT} characters.`);
+  }
+  const wordCount = cleanMsg.split(" ").filter(Boolean).length;
+  if (wordCount > BLESSING_WORD_LIMIT) {
+    throw new HttpsError("invalid-argument", `Please keep it to ${BLESSING_WORD_LIMIT} words or fewer.`);
+  }
+
+  let cleanFrom = "";
+  if (typeof from === "string") {
+    cleanFrom = from.replace(/\s+/g, " ").trim().slice(0, BLESSING_NAME_LIMIT);
+  }
+
+  const doc = await db.collection("photos").add({
+    type: "blessing",
+    message: cleanMsg,
+    from: cleanFrom,
+    status: "ready",
+    uploadedAt: FieldValue.serverTimestamp(),
+  });
+
+  logger.info(`New blessing ${doc.id} (${wordCount} words).`);
+  return { success: true, id: doc.id };
+});
+
+/* ============================================================
  * Helpers
  * ============================================================ */
 function makeToken() {

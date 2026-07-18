@@ -1,9 +1,9 @@
 # Architecture — Wedding Live Photo Wall
 
 A live photo-sharing wall for a wedding. Guests scan a QR code to upload
-photos from their phones/cameras; new photos appear on a projector screen in
-real time, and everyone can browse the full gallery. Photos auto-delete
-after 1 week.
+photos from their phones/cameras — or leave a short text **blessing** — and
+they appear on a projector screen in real time, with everyone able to browse
+the full gallery. Photos and blessings auto-delete after 1 week.
 
 - **Firebase project:** `wedding-photo-wall-3ace4`
 - **Region:** `asia-southeast1` (Singapore) — chosen to keep functions close to the Firestore/Storage data
@@ -15,6 +15,7 @@ after 1 week.
 | Page | URL | Audience |
 |---|---|---|
 | Guest upload | https://wedding-photo-wall-3ace4.web.app | Guests (QR code lands here) |
+| Leave a blessing | https://wedding-photo-wall-3ace4.web.app/blessing | Guests posting a text message |
 | Projector live wall | https://wedding-photo-wall-3ace4.web.app/wall | Public display, shown on the projector |
 | Gallery | https://wedding-photo-wall-3ace4.web.app/gallery | Guests browsing/downloading all photos |
 | Admin (delete photos) | https://wedding-photo-wall-3ace4.web.app/gallery?admin=megumi-timothy-8826-admin | Private — moderators only |
@@ -49,17 +50,19 @@ wedding-app/
 ├─ storage.rules            # Storage: guest uploads ≤50MB, public read of /processed
 ├─ firestore.indexes.json   # (empty — the one query used needs no composite index)
 ├─ functions/
-│  ├─ index.js              # processUpload, cleanupExpired, deletePhoto
+│  ├─ index.js              # processUpload, cleanupExpired, deletePhoto, postBlessing
 │  └─ package.json          # firebase-admin, firebase-functions, sharp, heic-convert
 └─ public/                  # Static site deployed to Hosting
    ├─ index.html             # Guest UPLOAD page
    ├─ gallery.html           # Guest GALLERY (+ hidden admin mode via ?admin=)
    ├─ wall.html              # Projector LIVE WALL + QR code
+   ├─ blessing.html          # Guest LEAVE-A-BLESSING page (text message)
    ├─ css/styles.css
    └─ js/
       ├─ firebase-init.js    # Shared Firebase config + app-wide constants
       ├─ upload.js           # Client-side validation + resumable upload
       ├─ gallery.js          # Gallery grid + admin delete calls
+      ├─ blessing.js         # Blessing form: live word limiter + postBlessing call
       └─ wall.js             # Live wall grid (Firestore listener, limit 15)
 ```
 
@@ -90,9 +93,12 @@ upload.js
                                                                         render live as new docs arrive
 ```
 
-Two supporting functions:
-- **`cleanupExpired`** — runs on a schedule (hourly). Deletes any `photos` doc (and its two Storage files) older than `RETENTION_HOURS` (currently 168h = 1 week), keeping storage small and the event self-cleaning.
-- **`deletePhoto`** — callable function used by the gallery's hidden admin mode (`?admin=<key>`). Requires the secret `ADMIN_KEY`; deletes the Firestore doc + both processed files immediately so moderators can remove inappropriate photos live.
+Three supporting functions:
+- **`cleanupExpired`** — runs on a schedule (hourly). Deletes any `photos` doc (and its two Storage files, if any) older than `RETENTION_HOURS` (currently 168h = 1 week), keeping storage small and the event self-cleaning.
+- **`deletePhoto`** — callable function used by the gallery's hidden admin mode (`?admin=<key>`). Requires the secret `ADMIN_KEY`; deletes the Firestore doc + both processed files immediately so moderators can remove inappropriate photos (or blessings) live.
+- **`postBlessing`** — callable function behind the blessing page. Validates a short text message server-side (≤30 words, ≤200 chars; optional name ≤24 chars) and writes a `type: "blessing"` doc via the Admin SDK. No Storage files are involved.
+
+See **Blessings** below for how text messages share the same collection, listeners, retention, and admin tooling as photos.
 
 ---
 
@@ -104,7 +110,7 @@ the Admin SDK, which bypasses rules) can do that. This prevents guests from
 spoofing photo documents or injecting arbitrary files into the public feed.
 
 **Firestore (`firestore.rules`):**
-- `photos/{photoId}`: anyone can **read** (drives the wall/gallery); **create/update/delete is denied** for clients — only the backend writes.
+- `photos/{photoId}`: anyone can **read** (drives the wall/gallery); **create/update/delete is denied** for clients — only the backend writes. This applies to both photo docs and blessing docs: blessings are created only through the trusted `postBlessing` function, so guests can't inject arbitrary/spoofed messages.
 
 **Storage (`storage.rules`):**
 - `/uploads/{fileName}`: anyone can **create** (upload) an image ≤50MB; **no read** (originals are transient and deleted right after processing).
@@ -168,6 +174,52 @@ sit in storage. So the guaranteed extra cost is tiny:
 **Bottom line:** extending retention to a week is essentially free (pennies of
 storage); the only way it becomes a few dollars is if the extra days drive a lot
 more full-res downloading.
+
+---
+
+## Blessings (guest text messages)
+
+Guests can post a short **text blessing** instead of (or as well as) a photo,
+via the `blessing.html` page. Blessings live in the **same `photos` collection**
+as photos, distinguished by a `type: "blessing"` field, so they automatically
+flow through the existing live listeners, retention cleanup, and admin delete —
+no separate collection or pipeline.
+
+**Document shape**
+
+| Field | Photo doc | Blessing doc |
+|---|---|---|
+| `type` | absent / `"photo"` | `"blessing"` |
+| `thumbnailURL` / `displayURL` / `thumbPath` / `displayPath` | set | *absent* |
+| `message` | — | the blessing text |
+| `from` | — | optional name (may be empty) |
+| `uploadedAt`, `status` | set | set |
+
+**Flow:** `blessing.js` (live word counter + limiter) → `postBlessing` callable
+(validates, Admin SDK writes the doc) → the wall + gallery listeners render it.
+Because there are no Storage files, `cleanupExpired` and `deletePhoto` simply
+skip the file deletions (guarded by `if (data.displayPath)`), delete the doc,
+and it disappears everywhere.
+
+**Word limit — why 30.** The wall auto-scales each blessing's text to fit its
+frame. A frame is ~280×340px on a 1080p projector, so past ~30 words the
+auto-fit font drops below ~24px — too small to read across a room. 30 words
+keeps short messages large and long ones still legible. It's also
+forward-compatible with a future **auto-scroll** wall: moving text is harder to
+read and each frame has limited on-screen dwell time, so a tight cap stays
+right (a 30-word blessing needs ~15s of readable dwell at ~120 wpm). Limits live
+in `firebase-init.js` (`BLESSING_WORD_LIMIT` / `BLESSING_CHAR_LIMIT` /
+`BLESSING_NAME_LIMIT`) for the client **and** are re-enforced in `postBlessing`.
+
+**Rendering**
+- **Wall:** a cream serif "note" card; JS (`fitBlessing`) binary-searches the
+  font size to fill the frame while leaving margin for the **same Ken Burns
+  zoom/drift** as photos, so the words never clip. Text is refit on viewport
+  resize.
+- **Gallery:** an auto-fit text cell; tapping it opens the message enlarged in
+  the lightbox (no download button).
+- Rendered with `textContent` (never `innerHTML`), so a blessing can't inject
+  markup/script.
 
 ---
 

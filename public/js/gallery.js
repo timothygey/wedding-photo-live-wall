@@ -28,6 +28,7 @@ const emptyState = document.getElementById("emptyState");
 const loadMoreBtn = document.getElementById("loadMoreBtn");
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightboxImg");
+const lightboxText = document.getElementById("lightboxText");
 const lightboxClose = document.getElementById("lightboxClose");
 const downloadBtn = document.getElementById("downloadBtn");
 
@@ -95,14 +96,64 @@ function makeCell(id, data) {
   const cell = document.createElement("div");
   cell.className = "cell";
   cell.dataset.id = id;
-  const img = document.createElement("img");
-  img.loading = "lazy";
-  img.src = data.thumbnailURL;
-  img.alt = "Guest photo";
-  cell.appendChild(img);
+  if (data.type === "blessing") {
+    cell.classList.add("blessing");
+    const card = document.createElement("div");
+    card.className = "blessing-card";
+    const msg = document.createElement("div");
+    msg.className = "blessing-msg";
+    msg.textContent = data.message || "";
+    card.appendChild(msg);
+    if (data.from) {
+      const from = document.createElement("div");
+      from.className = "blessing-from";
+      from.textContent = "— " + data.from;
+      card.appendChild(from);
+    }
+    cell.appendChild(card);
+    requestAnimationFrame(() => fitCell(cell));
+  } else {
+    const img = document.createElement("img");
+    img.loading = "lazy";
+    img.src = data.thumbnailURL;
+    img.alt = "Guest photo";
+    cell.appendChild(img);
+  }
   cell.addEventListener("click", () => openLightbox(id, data));
   return cell;
 }
+
+// Scale a blessing's text to fill its (square) gallery cell.
+function fitCell(cell) {
+  const card = cell.querySelector(".blessing-card");
+  if (!card) return;
+  const availW = card.clientWidth;
+  const availH = card.clientHeight;
+  if (!availW || !availH) return;
+  const prevJustify = card.style.justifyContent;
+  card.style.justifyContent = "flex-start";
+  let lo = 10, hi = Math.floor(availH * 0.5), best = lo;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    card.style.fontSize = mid + "px";
+    if (card.scrollWidth <= availW && card.scrollHeight <= availH) {
+      best = mid;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+  card.style.fontSize = best + "px";
+  card.style.justifyContent = prevJustify;
+}
+
+let refitTimer = null;
+window.addEventListener("resize", () => {
+  clearTimeout(refitTimer);
+  refitTimer = setTimeout(() => {
+    grid.querySelectorAll(".cell.blessing").forEach(fitCell);
+  }, 200);
+});
 function prependCell(id, data) {
   if (seenIds.has(id)) return;
   seenIds.add(id);
@@ -122,9 +173,30 @@ function removeCell(id) {
 /* ---------- Lightbox ---------- */
 function openLightbox(id, data) {
   currentPhotoId = id;
-  lightboxImg.src = data.displayURL;
-  downloadBtn.href = data.displayURL;
-  downloadBtn.setAttribute("download", "wedding-photo.jpg");
+  if (data.type === "blessing") {
+    // Text blessing: show the message large, no image/download.
+    lightboxImg.style.display = "none";
+    downloadBtn.style.display = "none";
+    lightboxText.style.display = "block";
+    lightboxText.innerHTML = "";
+    const msg = document.createElement("div");
+    msg.className = "lb-msg";
+    msg.textContent = data.message || "";
+    lightboxText.appendChild(msg);
+    if (data.from) {
+      const from = document.createElement("div");
+      from.className = "lb-from";
+      from.textContent = "— " + data.from;
+      lightboxText.appendChild(from);
+    }
+  } else {
+    lightboxText.style.display = "none";
+    lightboxImg.style.display = "";
+    downloadBtn.style.display = "";
+    lightboxImg.src = data.displayURL;
+    downloadBtn.href = data.displayURL;
+    downloadBtn.setAttribute("download", "wedding-photo.jpg");
+  }
   lightbox.classList.add("open");
 }
 lightboxClose.addEventListener("click", () => lightbox.classList.remove("open"));

@@ -78,16 +78,82 @@ function addPhoto(id, data) {
   const el = document.createElement("div");
   el.className = "photo";
   el.dataset.id = id;
-  const img = document.createElement("img");
-  img.src = data.thumbnailURL;
-  img.alt = "Guest photo";
-  // Random negative delay so each tile's Ken Burns zoom is out of sync.
-  img.style.animationDelay = `-${(Math.random() * 20).toFixed(1)}s`;
-  el.appendChild(img);
+
+  // Same Ken Burns start-phase offset for both photos and blessings.
+  const delay = `-${(Math.random() * 16).toFixed(1)}s`;
+
+  if (data.type === "blessing") {
+    el.classList.add("blessing");
+    const card = document.createElement("div");
+    card.className = "blessing-card";
+    card.style.animationDelay = delay;
+
+    const quote = document.createElement("div");
+    quote.className = "blessing-msg";
+    quote.textContent = data.message || "";
+    card.appendChild(quote);
+
+    if (data.from) {
+      const from = document.createElement("div");
+      from.className = "blessing-from";
+      from.textContent = "— " + data.from;
+      card.appendChild(from);
+    }
+    el.appendChild(card);
+    // Fit the text to the frame once it's laid out.
+    requestAnimationFrame(() => fitBlessing(el));
+  } else {
+    const img = document.createElement("img");
+    img.src = data.thumbnailURL;
+    img.alt = "Guest photo";
+    img.style.animationDelay = delay;
+    el.appendChild(img);
+  }
+
   // Newest first.
   grid.insertBefore(el, grid.firstChild === emptyState ? null : grid.firstChild);
   rendered.set(id, el);
 }
+
+// Dynamically scale a blessing's text so it fills its frame while leaving a
+// margin for the Ken Burns zoom (so the words never get clipped as it scales).
+function fitBlessing(el) {
+  const card = el.querySelector(".blessing-card");
+  if (!card) return;
+  const availW = card.clientWidth;
+  const availH = card.clientHeight;
+  if (!availW || !availH) return;
+
+  // Top-align while measuring so vertical overflow is fully reported
+  // (flex centering can hide overflow that spills above the top).
+  const prevJustify = card.style.justifyContent;
+  card.style.justifyContent = "flex-start";
+
+  let lo = 12, hi = Math.floor(availH * 0.5), best = lo;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    card.style.fontSize = mid + "px";
+    if (card.scrollWidth <= availW && card.scrollHeight <= availH) {
+      best = mid;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+  card.style.fontSize = best + "px";
+  card.style.justifyContent = prevJustify; // restore centering
+}
+
+// Re-fit every blessing when the viewport (and thus frame size) changes.
+let refitTimer = null;
+window.addEventListener("resize", () => {
+  clearTimeout(refitTimer);
+  refitTimer = setTimeout(() => {
+    rendered.forEach((el) => {
+      if (el.classList.contains("blessing")) fitBlessing(el);
+    });
+  }, 200);
+});
 
 function removePhoto(id) {
   const el = rendered.get(id);

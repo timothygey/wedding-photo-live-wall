@@ -510,3 +510,63 @@ body.gallery-page::after {
 /* Lightbox — warm neutral dark (no purple) so opened photos still pop; the
    white close button and gold Download button stay readable on it */
 .gallery-page .lightbox { background: rgba(38, 32, 26, 0.82); }
+
+/* ============================================================
+   BLESSINGS — guest text messages
+   ============================================================ */
+
+/* ---- Blessing form (blessing.html, inside the frosted upload-card) ---- */
+.blessing-input, .blessing-name {
+  width: 100%; box-sizing: border-box;
+  font-family: var(--font-body); font-size: 1rem; color: #3a2f26;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 14px; padding: 12px 14px;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+.blessing-input { min-height: 120px; line-height: 1.5; resize: vertical; }
+.blessing-input::placeholder, .blessing-name::placeholder { color: rgba(70, 55, 40, 0.5); }
+.blessing-input:focus, .blessing-name:focus {
+  outline: none; border-color: var(--accent); background: rgba(255, 255, 255, 0.8);
+}
+.blessing-meta { display: flex; justify-content: flex-end; margin: 6px 2px 12px; }
+.counter { font-size: 0.85rem; color: rgba(70, 55, 40, 0.8); }
+.counter.over { color: #c0392b; font-weight: 600; }
+.blessing-name { margin-bottom: 16px; }
+
+/* ---- Blessing card shared look (cream "note" among the photos) ---- */
+.blessing-card {
+  width: 100%; height: 100%; box-sizing: border-box;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center;
+  background: linear-gradient(150deg, rgba(255, 251, 242, 0.94), rgba(250, 242, 228, 0.9));
+  color: #5a4326; font-family: var(--font-display); line-height: 1.28;
+}
+.blessing-card .blessing-msg { font-weight: 600; }
+.blessing-card .blessing-from {
+  font-size: 0.62em; margin-top: 0.55em; color: #b0842f;
+  font-style: italic; font-weight: 600; letter-spacing: 0.02em;
+}
+
+/* ---- Blessing on the WALL: fills the frame, padded to leave room for the
+   Ken Burns zoom so the words never clip, with the same zoom/drift as photos ---- */
+.photo-grid .photo.blessing .blessing-card {
+  padding: 14% 12%;
+  transform-origin: center center;
+  will-change: transform;
+  animation: kenBurns 16s ease-in-out infinite alternate;
+}
+
+/* ---- Blessing in the GALLERY: static square cell ---- */
+.gallery-page .gallery-grid .cell.blessing .blessing-card { padding: 12%; line-height: 1.25; }
+
+/* ---- Blessing in the lightbox (enlarged text view) ---- */
+.lightbox-text { max-width: 680px; text-align: center; padding: 24px; }
+.lightbox-text .lb-msg {
+  font-family: var(--font-display); font-weight: 600; line-height: 1.3;
+  color: var(--text-light); font-size: clamp(1.6rem, 5vw, 3rem);
+}
+.lightbox-text .lb-from {
+  margin-top: 16px; font-family: var(--font-display); font-style: italic;
+  color: var(--accent); font-size: clamp(1rem, 3vw, 1.4rem);
+}

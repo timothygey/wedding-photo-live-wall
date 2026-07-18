@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Timothy &amp; Megumi — Share Your Photos</title>
+<title>Timothy &amp; Megumi — Leave a Blessing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -13,32 +13,32 @@
   <div class="guest-wrap">
     <div class="guest-header">
       <div class="couple">Timothy &amp; Megumi</div>
-      <div class="date">8.8.2026</div>
+      <div class="date">Leave a Blessing</div>
     </div>
 
     <div class="tab-bar">
+      <a class="btn btn-secondary" href="index.html">📷 Add Photos</a>
       <a class="btn btn-secondary" href="gallery.html">🖼️ Gallery</a>
-      <a class="btn btn-secondary" href="blessing.html">💌 Blessing</a>
     </div>
 
     <div class="upload-card">
-      <p>Share the moments you've captured today! Photos appear on the big screen and in the gallery for everyone to enjoy.</p>
+      <p>Share your wishes for the couple 💛 Your blessing appears on the big screen and in the gallery. Keep it short &amp; sweet — up to 30 words.</p>
 
-      <label class="drop-zone" id="dropZone" for="fileInput">
-        <div class="cam-badge">📷</div>
-        <div class="big-label">Tap to add photos</div>
-        <div class="hint">Take a new one or choose from your library · up to 50MB each</div>
-      </label>
-      <input type="file" id="fileInput" accept="image/*,.heic,.heif" multiple />
+      <textarea id="msg" class="blessing-input" rows="4"
+        placeholder="Wishing you a lifetime of love and laughter…"></textarea>
+      <div class="blessing-meta">
+        <span class="counter" id="counter">0 / 30 words</span>
+      </div>
 
-      <div class="selected-list" id="selectedList"></div>
+      <input id="from" class="blessing-name" type="text"
+        placeholder="Your name (optional)" />
 
-      <button class="btn btn-primary btn-block" id="uploadBtn" disabled>Upload Photos</button>
+      <button class="btn btn-primary btn-block" id="sendBtn" disabled>Send Blessing</button>
 
       <div id="toast"></div>
     </div>
   </div>
 
-<script type="module" src="js/upload.js?v=2"></script>
+<script type="module" src="js/blessing.js?v=1"></script>
 </body>
 </html>

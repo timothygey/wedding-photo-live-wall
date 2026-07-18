@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="css/styles.css?v=7" />
+<link rel="stylesheet" href="css/styles.css?v=11" />
 </head>
 <body class="gallery-page">
   <div class="guest-wrap">
@@ -16,8 +16,9 @@
       <div class="date">Photo Gallery</div>
     </div>
 
-    <div class="tab-bar tab-bar-single">
-      <a class="btn btn-primary" href="index.html">📤 Back to Upload</a>
+    <div class="tab-bar">
+      <a class="btn btn-primary" href="index.html">📤 Add Photos</a>
+      <a class="btn btn-secondary" href="blessing.html">💌 Blessing</a>
     </div>
 
     <div class="gallery-grid" id="galleryGrid"></div>
@@ -34,11 +35,12 @@
   <div class="lightbox" id="lightbox">
     <button class="close" id="lightboxClose">&times;</button>
     <img id="lightboxImg" src="" alt="Photo" />
+    <div class="lightbox-text" id="lightboxText" style="display:none;"></div>
     <div class="actions">
       <a class="btn btn-primary" id="downloadBtn" href="#" download>⬇️ Download</a>
     </div>
   </div>
 
-<script type="module" src="js/gallery.js?v=4"></script>
+<script type="module" src="js/gallery.js?v=5"></script>
 </body>
 </html>
