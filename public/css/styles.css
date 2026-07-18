@@ -121,7 +121,7 @@ html, body {
 .tab-bar-single .btn { flex: 0 1 auto; min-width: 60%; }
 
 /* ---- Instagram-style sparkle button (shimmering gold text + twinkling stars) ---- */
-.sparkle-btn { position: relative; overflow: visible; }
+.sparkle-btn { position: relative; overflow: visible; text-align: center; }
 .sparkle-btn .sparkle-text {
   background: linear-gradient(100deg, #a9762e 0%, #d9a441 30%, #f6e3b0 48%, #d9a441 66%, #a9762e 100%);
   background-size: 220% auto;
