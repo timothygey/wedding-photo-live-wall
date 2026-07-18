@@ -24,7 +24,12 @@ counter.textContent = `0 / ${BLESSING_WORD_LIMIT} words`;
 const countWords = (t) => t.trim().split(/\s+/).filter(Boolean).length;
 
 /* ---------- Live word counter + limiter ---------- */
-msg.addEventListener("input", updateState);
+msg.addEventListener("input", () => {
+  // Never allow leading whitespace — it serves no purpose and can otherwise
+  // affect how the message is measured/scaled on the wall.
+  if (/^\s/.test(msg.value)) msg.value = msg.value.replace(/^\s+/, "");
+  updateState();
+});
 
 function updateState() {
   const words = countWords(msg.value);
@@ -47,7 +52,7 @@ sendBtn.addEventListener("click", async () => {
   clearToast();
 
   try {
-    await callPost({ message: msg.value, from: from.value });
+    await callPost({ message: msg.value.trim(), from: from.value.trim() });
     showToast("success", "💛 Thank you! Your blessing will appear on the wall shortly.");
     msg.value = "";
     from.value = "";

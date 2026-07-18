@@ -90,13 +90,14 @@ function addPhoto(id, data) {
 
     const quote = document.createElement("div");
     quote.className = "blessing-msg";
-    quote.textContent = data.message || "";
+    quote.textContent = (data.message || "").trim();
     card.appendChild(quote);
 
-    if (data.from) {
+    const fromText = (data.from || "").trim();
+    if (fromText) {
       const from = document.createElement("div");
       from.className = "blessing-from";
-      from.textContent = "— " + data.from;
+      from.textContent = "— " + fromText;
       card.appendChild(from);
     }
     el.appendChild(card);

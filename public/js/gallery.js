@@ -102,12 +102,13 @@ function makeCell(id, data) {
     card.className = "blessing-card";
     const msg = document.createElement("div");
     msg.className = "blessing-msg";
-    msg.textContent = data.message || "";
+    msg.textContent = (data.message || "").trim();
     card.appendChild(msg);
-    if (data.from) {
+    const fromText = (data.from || "").trim();
+    if (fromText) {
       const from = document.createElement("div");
       from.className = "blessing-from";
-      from.textContent = "— " + data.from;
+      from.textContent = "— " + fromText;
       card.appendChild(from);
     }
     cell.appendChild(card);
@@ -186,12 +187,13 @@ function openLightbox(id, data) {
     lightboxText.innerHTML = "";
     const msg = document.createElement("div");
     msg.className = "lb-msg";
-    msg.textContent = data.message || "";
+    msg.textContent = (data.message || "").trim();
     lightboxText.appendChild(msg);
-    if (data.from) {
+    const fromText = (data.from || "").trim();
+    if (fromText) {
       const from = document.createElement("div");
       from.className = "lb-from";
-      from.textContent = "— " + data.from;
+      from.textContent = "— " + fromText;
       lightboxText.appendChild(from);
     }
   } else {
