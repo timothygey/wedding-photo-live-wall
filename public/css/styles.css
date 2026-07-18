@@ -301,7 +301,7 @@ input[type="file"] { display: none; }
      (set in wall.js) so the 15 photos drift out of sync. */
   transform-origin: center center;
   will-change: transform;
-  animation: kenBurns 20s ease-in-out infinite alternate;
+  animation: kenBurns 16s ease-in-out infinite alternate;
 }
 @keyframes popIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
 @keyframes kenBurns {
