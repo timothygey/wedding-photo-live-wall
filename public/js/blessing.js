@@ -10,6 +10,7 @@ import {
   BLESSING_NAME_LIMIT,
 } from "./firebase-init.js";
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+import { watchGuard, setBanner } from "./guard.js";
 
 const msg = document.getElementById("msg");
 const from = document.getElementById("from");
@@ -22,6 +23,16 @@ from.setAttribute("maxlength", BLESSING_NAME_LIMIT);
 counter.textContent = `0 / ${BLESSING_WORD_LIMIT} words`;
 
 const countWords = (t) => t.trim().split(/\s+/).filter(Boolean).length;
+
+/* ---------- Cost guard ---------- */
+let guardLocked = false;
+watchGuard((locked) => {
+  guardLocked = locked;
+  setBanner(locked, "💛 Well-wishes are paused for now — thank you for celebrating with us! The live wall keeps playing.");
+  msg.disabled = locked;
+  from.disabled = locked;
+  updateState();
+});
 
 /* ---------- Live word counter + limiter ---------- */
 msg.addEventListener("input", () => {
@@ -36,14 +47,16 @@ function updateState() {
   const over = words > BLESSING_WORD_LIMIT;
   counter.textContent = `${words} / ${BLESSING_WORD_LIMIT} words`;
   counter.classList.toggle("over", over);
-  // Enable only when there's something to send and it's within the limit.
-  sendBtn.disabled = words === 0 || over;
+  // Enable only when there's something to send, it's within the limit, and the
+  // cost guard isn't active.
+  sendBtn.disabled = words === 0 || over || guardLocked;
 }
 
 /* ---------- Send ---------- */
 const callPost = httpsCallable(functions, "postBlessing");
 
 sendBtn.addEventListener("click", async () => {
+  if (guardLocked) return;
   const words = countWords(msg.value);
   if (words === 0 || words > BLESSING_WORD_LIMIT) return;
 
@@ -62,8 +75,8 @@ sendBtn.addEventListener("click", async () => {
   } finally {
     sendBtn.textContent = "Send Blessing";
     // updateState() already set the correct disabled state on success;
-    // re-enable on error so they can retry.
-    if (countWords(msg.value) > 0) sendBtn.disabled = false;
+    // re-enable on error so they can retry (unless the guard is on).
+    if (!guardLocked && countWords(msg.value) > 0) sendBtn.disabled = false;
   }
 });
 

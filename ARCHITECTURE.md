@@ -272,6 +272,41 @@ rest extend below.
 
 ---
 
+## Cost guard (spend safety net)
+
+A single Firestore flag — `config/guard` `{ locked: bool }` — lets the app
+**disable cost-incurring features** if project spend gets high, while the live
+wall keeps scrolling. It's set two ways:
+
+- **(A) Automatic** — `budgetGuard` (a Pub/Sub-triggered function) locks the flag
+  when the Cloud Billing budget crosses `BUDGET_LOCK_AMOUNT` (S$25). The budget
+  must be connected to the **`budget-alerts`** Pub/Sub topic (created on deploy).
+- **(B) Manual** — `setGuard` (admin-key callable) toggles the flag on demand,
+  via a **Pause/Resume** button shown in the gallery admin mode (`?admin=`). This
+  is also how you **clear** an auto-lock, since budgets never "un-trip."
+
+Every guest page watches the flag (`guard.js`, fails *open* on a read error).
+When locked:
+
+| Page | Disabled (cost driver removed) |
+|---|---|
+| Upload (`index.html`) | Photo upload — Storage write + `processUpload` compute + egress (**biggest driver**) |
+| Blessing (`blessing.html`) | Send — `postBlessing` invocation + Firestore write |
+| Gallery (`gallery.html`) | Full-res **download** + full display image in the lightbox (shows the thumbnail instead) → egress |
+| **Wall** (`wall.html`) | *Nothing* — keeps auto-scrolling on already-loaded frames |
+| Admin | Nothing (delete still works — it *reduces* cost) |
+
+Guests see a friendly banner; the wall shows no change. `config/guard` is
+world-readable but backend-write-only (see `firestore.rules`).
+
+**Caveats:** it's a *soft* guard — passive viewing (thumbnail egress, wall
+listener reads) continues while the site is up, but those are small and bounded
+once uploads stop. Budget figures lag actual spend by a few hours, so the
+auto-lock trips a bit after truly crossing the threshold. A true hard cap would
+mean disabling billing (which breaks the functions and the wall) — not used here.
+
+---
+
 ## Cost & scale notes
 
 - Designed for a single event's worth of traffic (hundreds of photos, one evening) — expected cost is well under US$1 on Firebase's Blaze (pay-as-you-go) plan, which is required for Cloud Functions.

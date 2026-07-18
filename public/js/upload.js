@@ -8,6 +8,7 @@ import {
   ref,
   uploadBytesResumable,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+import { watchGuard, setBanner } from "./guard.js";
 
 const fileInput = document.getElementById("fileInput");
 const dropZone = document.getElementById("dropZone");
@@ -16,6 +17,18 @@ const uploadBtn = document.getElementById("uploadBtn");
 const toast = document.getElementById("toast");
 
 let chosen = []; // [{ file, valid, reason }]
+
+/* ---------- Cost guard ---------- */
+// When the project cost guard is on, disable uploading (Storage writes +
+// image-processing function + egress are the biggest cost drivers).
+let guardLocked = false;
+watchGuard((locked) => {
+  guardLocked = locked;
+  setBanner(locked, "💛 Photo uploads are paused for now — thanks so much for celebrating with us! The live wall keeps playing.");
+  fileInput.disabled = locked;
+  dropZone.classList.toggle("disabled", locked);
+  uploadBtn.disabled = locked || !chosen.some((c) => c.valid);
+});
 
 /* ---------- File selection ---------- */
 fileInput.addEventListener("change", () => addFiles(fileInput.files));
@@ -92,11 +105,12 @@ function renderSelected() {
   });
 
   const anyValid = chosen.some((c) => c.valid);
-  uploadBtn.disabled = !anyValid;
+  uploadBtn.disabled = !anyValid || guardLocked;
 }
 
 /* ---------- Upload ---------- */
 uploadBtn.addEventListener("click", async () => {
+  if (guardLocked) return;
   const validItems = chosen.filter((c) => c.valid);
   if (!validItems.length) return;
 

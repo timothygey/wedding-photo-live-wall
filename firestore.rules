@@ -19,6 +19,14 @@ service cloud.firestore {
       allow create, update, delete: if false; // only the backend writes
     }
 
+    // Cost-guard flag (config/guard): read by every page to know whether to
+    // disable cost-incurring features. Written ONLY by the backend
+    // (setGuard / budgetGuard via the Admin SDK).
+    match /config/{document} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Deny everything else by default.
     match /{document=**} {
       allow read, write: if false;

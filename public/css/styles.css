@@ -247,6 +247,20 @@ html, body {
 
 input[type="file"] { display: none; }
 
+/* Drop zone greyed out when the cost guard disables uploads */
+.drop-zone.disabled { opacity: 0.45; pointer-events: none; filter: grayscale(0.4); }
+
+/* ---------- Cost-guard banner (shown at top of guest pages when locked) ---------- */
+.guard-banner {
+  background: linear-gradient(135deg, rgba(230, 184, 102, 0.96), rgba(217, 164, 65, 0.92));
+  color: #4a3410;
+  font-family: var(--font-body); font-weight: 600; font-size: 0.9rem;
+  text-align: center; line-height: 1.4;
+  padding: 12px 14px; border-radius: 14px; margin-bottom: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 6px 18px rgba(60, 45, 25, 0.15);
+}
+
 /* ---------- Selected-files preview + progress ---------- */
 .selected-list { text-align: left; margin: 14px 0; }
 .selected-item {

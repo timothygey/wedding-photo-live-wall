@@ -17,6 +17,7 @@ import {
   onSnapshot,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+import { watchGuard, setBanner } from "./guard.js";
 
 // Read the admin key from the URL (?admin=...). Empty for normal guests.
 const ADMIN_KEY = new URLSearchParams(window.location.search).get("admin") || "";
@@ -36,6 +37,20 @@ const PAGE_SIZE = 30;
 let lastDoc = null;
 let loading = false;
 const seenIds = new Set();
+
+/* ---------- Cost guard ---------- */
+// When on: hide the full-res download and show the thumbnail (not the big
+// display image) in the lightbox, to avoid egress cost. Also updates the
+// admin lock/unlock toggle's label.
+let guardLocked = false;
+let adminGuardBtn = null;
+watchGuard((locked) => {
+  guardLocked = locked;
+  setBanner(locked, "💛 Downloads are paused for now — enjoy the photos on screen! The live wall keeps playing.");
+  if (adminGuardBtn) {
+    adminGuardBtn.textContent = locked ? "🔓 Resume sharing" : "🔒 Pause sharing (cost guard)";
+  }
+});
 
 /* ---------- Live listener for the newest page ---------- */
 // Keeps the top of the gallery fresh as new photos arrive, without a refresh.
@@ -199,10 +214,16 @@ function openLightbox(id, data) {
   } else {
     lightboxText.style.display = "none";
     lightboxImg.style.display = "";
-    downloadBtn.style.display = "";
-    lightboxImg.src = data.displayURL;
-    downloadBtn.href = data.displayURL;
-    downloadBtn.setAttribute("download", "wedding-photo.jpg");
+    if (guardLocked) {
+      // Cost guard on: show the already-loaded thumbnail, no full-res fetch/download.
+      lightboxImg.src = data.thumbnailURL;
+      downloadBtn.style.display = "none";
+    } else {
+      lightboxImg.src = data.displayURL;
+      downloadBtn.style.display = "";
+      downloadBtn.href = data.displayURL;
+      downloadBtn.setAttribute("download", "wedding-photo.jpg");
+    }
   }
   lightbox.classList.add("open");
 }
@@ -247,15 +268,32 @@ if (isAdmin) {
     }
   });
 
+  // Cost-guard toggle: manually lock/unlock cost-incurring features (also how
+  // you clear an auto-lock from the budget, since budgets don't un-trip).
+  adminGuardBtn = document.createElement("button");
+  adminGuardBtn.className = "btn btn-secondary btn-block";
+  adminGuardBtn.style.marginBottom = "14px";
+  adminGuardBtn.textContent = guardLocked ? "🔓 Resume sharing" : "🔒 Pause sharing (cost guard)";
+  const callSetGuard = httpsCallable(functions, "setGuard");
+  adminGuardBtn.addEventListener("click", async () => {
+    adminGuardBtn.disabled = true;
+    try {
+      await callSetGuard({ locked: !guardLocked, adminKey: ADMIN_KEY });
+    } catch (e) {
+      alert("Guard toggle failed: " + (e?.message || e));
+    } finally {
+      adminGuardBtn.disabled = false;
+    }
+  });
+
   // Small badge so you know admin mode is active.
   const badge = document.createElement("div");
   badge.textContent = "🔒 Admin mode — tap a photo to delete";
   badge.style.cssText =
-    "text-align:center;color:#e6b866;font-size:0.85rem;margin-bottom:14px;";
-  document.querySelector(".guest-wrap").insertBefore(
-    badge,
-    document.querySelector(".gallery-grid")
-  );
+    "text-align:center;color:#a9762e;font-size:0.85rem;margin-bottom:14px;";
+  const gridEl = document.querySelector(".gallery-grid");
+  document.querySelector(".guest-wrap").insertBefore(adminGuardBtn, gridEl);
+  document.querySelector(".guest-wrap").insertBefore(badge, gridEl);
 }
 
 /* ---------- State helpers ---------- */

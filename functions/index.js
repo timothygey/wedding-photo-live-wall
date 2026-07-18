@@ -21,6 +21,7 @@
 import { onObjectFinalized } from "firebase-functions/v2/storage";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onMessagePublished } from "firebase-functions/v2/pubsub";
 import { setGlobalOptions } from "firebase-functions/v2";
 import { initializeApp } from "firebase-admin/app";
 import { getStorage } from "firebase-admin/storage";
@@ -283,6 +284,59 @@ export const postBlessing = onCall(async (request) => {
 
   logger.info(`New blessing ${doc.id} (${wordCount} words).`);
   return { success: true, id: doc.id };
+});
+
+/* ============================================================
+ * 5. COST GUARD — a single Firestore flag (config/guard) that all pages
+ *    watch. When { locked: true }, guest pages disable the features that
+ *    incur cost (uploads, blessings, full-res downloads). The live wall is
+ *    unaffected and keeps scrolling.
+ *
+ *    (A) budgetGuard  — auto-locks when the Cloud Billing budget crosses the
+ *        threshold (via a Pub/Sub topic connected to the budget).
+ *    (B) setGuard     — admin toggle to lock/unlock on demand (also how you
+ *        clear an auto-lock, since budgets don't "un-trip").
+ * ============================================================ */
+const BUDGET_LOCK_AMOUNT = 25; // lock when actual spend reaches this (budget's currency, e.g. S$25)
+const GUARD_DOC = "config/guard";
+
+// (B) Manual admin toggle.
+export const setGuard = onCall(async (request) => {
+  const { locked, adminKey } = request.data || {};
+  if (adminKey !== ADMIN_KEY) {
+    throw new HttpsError("permission-denied", "Invalid admin key.");
+  }
+  await db.doc(GUARD_DOC).set(
+    { locked: !!locked, reason: locked ? "manual" : "", updatedAt: FieldValue.serverTimestamp() },
+    { merge: true }
+  );
+  logger.info(`Cost guard ${locked ? "LOCKED" : "unlocked"} (manual).`);
+  return { success: true, locked: !!locked };
+});
+
+// (A) Auto-lock from the billing budget's Pub/Sub notifications.
+// The budget must be connected to the "budget-alerts" Pub/Sub topic (this
+// deploy creates that topic). Budgets never auto-unlock, so clearing is manual.
+export const budgetGuard = onMessagePublished("budget-alerts", async (event) => {
+  let payload = {};
+  try {
+    payload = event.data.message.json || {};
+  } catch (e) {
+    logger.error("Budget message was not valid JSON:", e);
+    return;
+  }
+  const cost = Number(payload.costAmount || 0);
+  const budget = Number(payload.budgetAmount || 0);
+  const currency = payload.currencyCode || "";
+  logger.info(`Budget alert: cost=${cost} budget=${budget} ${currency}`);
+
+  if (cost >= BUDGET_LOCK_AMOUNT) {
+    await db.doc(GUARD_DOC).set(
+      { locked: true, reason: `budget:${cost}${currency}`, updatedAt: FieldValue.serverTimestamp() },
+      { merge: true }
+    );
+    logger.warn(`Cost ${cost}${currency} >= ${BUDGET_LOCK_AMOUNT} → cost guard LOCKED.`);
+  }
 });
 
 /* ============================================================

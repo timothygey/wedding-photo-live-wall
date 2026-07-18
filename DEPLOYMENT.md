@@ -85,6 +85,35 @@ Any change to `functions/index.js` requires `firebase deploy --only functions`. 
 
 ---
 
+## Cost guard (auto/manual "pause")
+
+A Firestore flag (`config/guard`) can disable the cost-incurring features
+(uploads, blessings, full-res downloads) while the wall keeps scrolling. See
+ARCHITECTURE.md → "Cost guard" for the design. Two ways to trip it:
+
+**Manual (B) — no console needed.** Open the gallery admin URL
+(`/gallery?admin=<key>`) and click **🔒 Pause sharing (cost guard)**. Click
+**🔓 Resume sharing** to clear it. This is also how you clear an auto-lock.
+
+**Automatic (A) — one-time Google Cloud Console setup** (the `budget-alerts`
+Pub/Sub topic is created by deploying functions):
+
+1. Google Cloud Console → **Billing → Budgets & alerts** → open your **S$25** budget → **Edit**.
+2. Confirm the budget **currency is SGD** and the amount is **25**.
+3. Under **Manage notifications**, tick **"Connect a Pub/Sub topic to this budget."**
+4. Choose project **`wedding-photo-wall-3ace4`** and select the topic **`budget-alerts`**.
+5. **Save.** (Google auto-grants the budget publish rights to the topic.)
+
+To test A without spending money: publish a fake budget message to the topic —
+Console → **Pub/Sub → Topics → `budget-alerts` → Messages → Publish**, body
+`{"costAmount":25,"budgetAmount":25,"currencyCode":"SGD"}`. The guard should
+lock within seconds; clear it from the admin toggle.
+
+> The auto-lock fires a few hours after spend *actually* crosses S$25 (budget
+> data lags), and never un-locks on its own — clear it manually when safe.
+
+---
+
 ## Troubleshooting
 
 | Problem | Fix |
