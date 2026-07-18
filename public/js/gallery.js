@@ -213,6 +213,11 @@ lightbox.addEventListener("click", (e) => {
 
 /* ---------- Admin delete ---------- */
 if (isAdmin) {
+  // Admin view is only for moderating/deleting — hide the guest nav buttons
+  // ("Add Photos" / "Share your well-wishes"). Removing the row shifts the
+  // gallery grid up to fill the space.
+  document.querySelector(".tab-bar")?.remove();
+
   // Reveal a Delete button in the lightbox actions.
   const actions = document.querySelector(".lightbox .actions");
   const delBtn = document.createElement("button");
