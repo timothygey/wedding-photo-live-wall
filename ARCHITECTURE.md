@@ -68,6 +68,25 @@ wedding-app/
 
 ---
 
+## Guest pages & navigation
+
+The three guest pages (`index.html` upload, `gallery.html`, `blessing.html`) and
+the projector `wall.html` share one bright, blurred-couple-photo **glass-gold**
+theme. Per-page tweaks are scoped via body classes (`.upload-page`,
+`.gallery-page`) so changes to one page don't leak into the others. Guests move
+between pages via themed nav buttons:
+
+- **Live Gallery** — opens the gallery. Same size/position on the upload and
+  blessing pages (fixed-height tab-bar buttons) for visual continuity.
+- **Share your well-wishes** — opens the blessing page; styled with an
+  Instagram-style sparkle (shimmering gold text + twinkling `✦` stars).
+- **Add Photos** — gold button with a text-sized camera icon that wiggles like
+  the upload page's "Tap to add photos" badge.
+
+Button labels live in the page HTML; the shared look lives in `styles.css`.
+
+---
+
 ## Data flow
 
 ```
