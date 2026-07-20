@@ -116,12 +116,18 @@ lock within seconds; clear it from the admin toggle.
 
 ## Photo downloads (Storage CORS)
 
-The gallery's **Save Photo** button fetches the image as a blob, then uses the
-Web Share API (native "Save Image" sheet on iOS/Android) with a blob-download
-fallback — because a plain `<a download>` is ignored for the cross-origin
-Storage URL (that was the "opens a white page" bug). This requires **CORS** on
-the Storage bucket so the browser can `fetch()` the image. Config is in
-`cors.json` (repo root). **One-time** apply:
+The gallery's **Save Photo** button fetches the image as a blob, then branches
+by platform — because a plain `<a download>` is ignored for the cross-origin
+Storage URL (that was the "opens a white page" bug):
+
+- **iOS:** Web Share sheet → **Save Image** → Photos (a blob download just
+  opens the image in Safari, so share is the only reliable path).
+- **Android + desktop:** a **direct blob download** → saves to Downloads, which
+  Samsung Gallery / Google Photos / etc. then show. (Android's share sheet is
+  app-to-app with no reliable "save to Gallery", so we skip it there.)
+
+This requires **CORS** on the Storage bucket so the browser can `fetch()` the
+image. Config is in `cors.json` (repo root). **One-time** apply:
 
 ```bash
 # Needs gsutil (Google Cloud SDK). No gsutil? Run it in Cloud Shell at

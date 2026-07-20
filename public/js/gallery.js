@@ -235,14 +235,25 @@ function openLightbox(id, data) {
  * The old approach used <a href=storageURL download>, but the `download`
  * attribute is ignored for CROSS-ORIGIN URLs, so browsers just navigated to
  * the raw image (the "white background" bug). Instead we fetch the image as a
- * blob, then:
- *   1. Try the Web Share API with files → opens the phone's NATIVE share/save
- *      sheet ("Save Image" → Photos on iOS, Gallery/Downloads on Android).
- *   2. Fall back to a same-origin blob download (the download attr works for
- *      blob: URLs) → saves to Downloads / Files.
+ * blob, then branch by platform:
+ *   - iOS: use the Web Share sheet — its "Save Image" is the only reliable way
+ *     to reach the Photos app (a blob <a download> just opens the image in
+ *     Safari).
+ *   - Android + desktop: do a DIRECT blob download → saves to Downloads, which
+ *     every gallery app (Samsung Gallery, Google Photos, …) then shows. We skip
+ *     the share sheet on Android on purpose: it's app-to-app (Telegram, WhatsApp,
+ *     "Photos → Upload") with no reliable "save to Gallery" entry.
  * Requires CORS on the Storage bucket so fetch() can read the image.
  */
 downloadBtn.addEventListener("click", savePhoto);
+
+// True on iPhone/iPod/iPad (incl. iPadOS, which reports as "MacIntel" + touch).
+function isIOS() {
+  return (
+    /iP(hone|od|ad)/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
+}
 
 async function savePhoto() {
   if (!currentPhotoUrl || guardLocked) return;
@@ -256,21 +267,23 @@ async function savePhoto() {
     if (!resp.ok) throw new Error("Fetch failed: " + resp.status);
     const blob = await resp.blob();
     const fileName = `TimothyMegumi_${currentPhotoId || Date.now()}.jpg`;
-    const file = new File([blob], fileName, { type: blob.type || "image/jpeg" });
 
-    // 1) Native share/save sheet (best on iOS + Android).
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file] });
-        return; // user saw the native sheet (Save Image / Save to Gallery)
-      } catch (err) {
-        // User cancelled the share sheet — treat as done, don't fall through.
-        if (err && err.name === "AbortError") return;
-        // Otherwise fall back to blob download below.
+    // iOS only: native share sheet → "Save Image" → Photos.
+    if (isIOS() && navigator.canShare) {
+      const file = new File([blob], fileName, { type: blob.type || "image/jpeg" });
+      if (navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file] });
+          return; // saved via the native sheet
+        } catch (err) {
+          if (err && err.name === "AbortError") return; // user cancelled
+          // otherwise fall through to a direct download
+        }
       }
     }
 
-    // 2) Fallback: same-origin blob download (download attr works for blob URLs).
+    // Android + desktop (and iOS fallback): direct blob download → Downloads →
+    // appears in the gallery. The download attr works for same-origin blob URLs.
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = blobUrl;
