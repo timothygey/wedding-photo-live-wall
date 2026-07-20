@@ -1,0 +1,11 @@
+[
+  {
+    "origin": [
+      "https://wedding-photo-wall-3ace4.web.app",
+      "https://wedding-photo-wall-3ace4.firebaseapp.com"
+    ],
+    "method": ["GET"],
+    "responseHeader": ["Content-Type"],
+    "maxAgeSeconds": 3600
+  }
+]

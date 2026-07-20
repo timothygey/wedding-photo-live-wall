@@ -23,6 +23,7 @@ import { watchGuard, setBanner } from "./guard.js";
 const ADMIN_KEY = new URLSearchParams(window.location.search).get("admin") || "";
 const isAdmin = ADMIN_KEY.length > 0;
 let currentPhotoId = null; // photo currently shown in the lightbox
+let currentPhotoUrl = null; // display URL of the photo in the lightbox
 
 const grid = document.getElementById("galleryGrid");
 const emptyState = document.getElementById("emptyState");
@@ -217,15 +218,75 @@ function openLightbox(id, data) {
     if (guardLocked) {
       // Cost guard on: show the already-loaded thumbnail, no full-res fetch/download.
       lightboxImg.src = data.thumbnailURL;
+      currentPhotoUrl = null;
       downloadBtn.style.display = "none";
     } else {
       lightboxImg.src = data.displayURL;
+      currentPhotoUrl = data.displayURL;
       downloadBtn.style.display = "";
-      downloadBtn.href = data.displayURL;
-      downloadBtn.setAttribute("download", "wedding-photo.jpg");
+      downloadBtn.textContent = "⬇️ Save Photo";
+      downloadBtn.disabled = false;
     }
   }
   lightbox.classList.add("open");
+}
+
+/* ---------- Save / download (mobile-friendly) ----------
+ * The old approach used <a href=storageURL download>, but the `download`
+ * attribute is ignored for CROSS-ORIGIN URLs, so browsers just navigated to
+ * the raw image (the "white background" bug). Instead we fetch the image as a
+ * blob, then:
+ *   1. Try the Web Share API with files → opens the phone's NATIVE share/save
+ *      sheet ("Save Image" → Photos on iOS, Gallery/Downloads on Android).
+ *   2. Fall back to a same-origin blob download (the download attr works for
+ *      blob: URLs) → saves to Downloads / Files.
+ * Requires CORS on the Storage bucket so fetch() can read the image.
+ */
+downloadBtn.addEventListener("click", savePhoto);
+
+async function savePhoto() {
+  if (!currentPhotoUrl || guardLocked) return;
+
+  const original = downloadBtn.textContent;
+  downloadBtn.disabled = true;
+  downloadBtn.textContent = "Preparing…";
+
+  try {
+    const resp = await fetch(currentPhotoUrl);
+    if (!resp.ok) throw new Error("Fetch failed: " + resp.status);
+    const blob = await resp.blob();
+    const fileName = `TimothyMegumi_${currentPhotoId || Date.now()}.jpg`;
+    const file = new File([blob], fileName, { type: blob.type || "image/jpeg" });
+
+    // 1) Native share/save sheet (best on iOS + Android).
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file] });
+        return; // user saw the native sheet (Save Image / Save to Gallery)
+      } catch (err) {
+        // User cancelled the share sheet — treat as done, don't fall through.
+        if (err && err.name === "AbortError") return;
+        // Otherwise fall back to blob download below.
+      }
+    }
+
+    // 2) Fallback: same-origin blob download (download attr works for blob URLs).
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 4000);
+  } catch (err) {
+    // Last resort: open the image in a new tab so they can long-press → Save.
+    console.error("Save failed:", err);
+    window.open(currentPhotoUrl, "_blank");
+  } finally {
+    downloadBtn.disabled = false;
+    downloadBtn.textContent = original;
+  }
 }
 lightboxClose.addEventListener("click", () => lightbox.classList.remove("open"));
 lightbox.addEventListener("click", (e) => {

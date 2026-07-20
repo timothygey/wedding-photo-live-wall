@@ -114,6 +114,28 @@ lock within seconds; clear it from the admin toggle.
 
 ---
 
+## Photo downloads (Storage CORS)
+
+The gallery's **Save Photo** button fetches the image as a blob, then uses the
+Web Share API (native "Save Image" sheet on iOS/Android) with a blob-download
+fallback — because a plain `<a download>` is ignored for the cross-origin
+Storage URL (that was the "opens a white page" bug). This requires **CORS** on
+the Storage bucket so the browser can `fetch()` the image. Config is in
+`cors.json` (repo root). **One-time** apply:
+
+```bash
+# Needs gsutil (Google Cloud SDK). No gsutil? Run it in Cloud Shell at
+# console.cloud.google.com (project wedding-photo-wall-3ace4) — upload cors.json first.
+gsutil cors set cors.json gs://wedding-photo-wall-3ace4.firebasestorage.app
+gsutil cors get gs://wedding-photo-wall-3ace4.firebasestorage.app   # verify
+```
+
+`cors.json` only allows **GET** from the site's own origins. If Save silently
+fails on mobile (or just opens the image in a tab), CORS isn't applied yet —
+re-run the command.
+
+---
+
 ## Testing & verification
 
 Recipes to re-confirm the key backend features (all verified **2026-07-18**).
