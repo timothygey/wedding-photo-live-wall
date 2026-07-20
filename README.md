@@ -21,8 +21,9 @@ wedding-app/
 ├─ firestore.rules          # DB: public read, backend-only writes
 ├─ storage.rules            # Storage: image uploads ≤50MB, public read of /processed
 ├─ firestore.indexes.json   # (empty — single-field index is automatic)
+├─ cors.json                # Storage bucket CORS (for the gallery Save Photo fetch)
 ├─ functions/
-│  ├─ index.js              # processUpload, cleanupExpired, deletePhoto, postBlessing
+│  ├─ index.js              # processUpload, cleanupExpired, deletePhoto, postBlessing, setGuard, budgetGuard
 │  └─ package.json          # sharp + heic-convert deps
 └─ public/                  # The guest + projector web pages (deployed to Hosting)
    ├─ index.html            # Guest UPLOAD page (QR lands here)
@@ -35,6 +36,7 @@ wedding-app/
       ├─ upload.js
       ├─ gallery.js
       ├─ blessing.js
+      ├─ guard.js           # Shared cost-guard listener + banner
       └─ wall.js
 ```
 

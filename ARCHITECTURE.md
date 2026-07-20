@@ -30,7 +30,7 @@ the full gallery. Photos and blessings auto-delete after 1 week.
 | Frontend Firebase SDK | Firebase JS SDK v10 (modular), loaded directly from Google's CDN (`gstatic.com`) |
 | Backend | **Node.js 20**, JavaScript (ES modules), deployed as **Cloud Functions (2nd gen)** |
 | Image processing | `sharp` (resize/compress/re-encode, native binary) + `heic-convert` (iPhone HEIC → JPEG) |
-| Database | **Firestore** (NoSQL document store) — one `photos` collection |
+| Database | **Firestore** (NoSQL document store) — a `photos` collection (photos + blessings) plus a `config/guard` flag |
 | File storage | **Cloud Storage for Firebase** — raw uploads + processed images |
 | Hosting | **Firebase Hosting** (static file CDN + rewrites/cache headers) |
 | Security | Firestore Security Rules + Storage Security Rules (declarative rules DSL, `rules_version = '2'`) |
@@ -49,8 +49,9 @@ wedding-app/
 ├─ firestore.rules          # DB: public read, backend-only writes
 ├─ storage.rules            # Storage: guest uploads ≤50MB, public read of /processed
 ├─ firestore.indexes.json   # (empty — the one query used needs no composite index)
+├─ cors.json                # Storage bucket CORS (lets the gallery Save Photo fetch images)
 ├─ functions/
-│  ├─ index.js              # processUpload, cleanupExpired, deletePhoto, postBlessing
+│  ├─ index.js              # processUpload, cleanupExpired, deletePhoto, postBlessing, setGuard, budgetGuard
 │  └─ package.json          # firebase-admin, firebase-functions, sharp, heic-convert
 └─ public/                  # Static site deployed to Hosting
    ├─ index.html             # Guest UPLOAD page
@@ -61,8 +62,9 @@ wedding-app/
    └─ js/
       ├─ firebase-init.js    # Shared Firebase config + app-wide constants
       ├─ upload.js           # Client-side validation + resumable upload
-      ├─ gallery.js          # Gallery grid + admin delete calls
+      ├─ gallery.js          # Gallery grid + admin delete + Save Photo (platform-aware)
       ├─ blessing.js         # Blessing form: live word limiter + postBlessing call
+      ├─ guard.js            # Shared cost-guard listener + banner
       └─ wall.js             # Auto-scrolling live wall grid (Firestore listener)
 ```
 
