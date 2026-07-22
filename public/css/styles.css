@@ -176,17 +176,24 @@ html, body {
 }
 .upload-card p { color: var(--text-dim); margin-bottom: 20px; line-height: 1.55; }
 
-/* ---------- Animated camera button (drop zone) ---------- */
+/* ---------- Camera + Library buttons (side-by-side drop zones) ----------
+   Two separate inputs on purpose: Android Chrome sends a plain multi-file
+   input to the Google Photos picker, which has NO camera option — only an
+   input with `capture` reliably opens the camera. */
+.button-group { display: flex; gap: 12px; margin-bottom: 10px; }
+
 .drop-zone {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 8px;
+  flex: 1 1 0;
+  min-width: 0;
   border: 2px dashed rgba(230, 184, 102, 0.55);
   border-radius: var(--radius);
-  padding: 30px 18px;
-  margin-bottom: 18px;
+  padding: 22px 12px;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.05);
   -webkit-backdrop-filter: blur(10px);
@@ -200,26 +207,33 @@ html, body {
 .drop-zone.dragover { border-color: var(--accent); background: rgba(230, 184, 102, 0.12); }
 .drop-zone:active { transform: scale(0.98); }
 
-/* Camera icon in a glossy circle that wiggles periodically */
+/* Icon in a glossy circle that wiggles periodically */
 .drop-zone .cam-badge {
-  width: 78px; height: 78px;
+  position: relative;
+  width: 64px; height: 64px;
   display: flex; align-items: center; justify-content: center;
   border-radius: 50%;
-  font-size: 2.3rem;
+  font-size: 2rem;
   background: linear-gradient(135deg, rgba(230,184,102,0.95), rgba(217,164,65,0.8));
   box-shadow: 0 8px 24px rgba(217, 164, 65, 0.45);
   animation: wiggle 2.4s ease-in-out infinite;
 }
-.drop-zone .big-label { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; color: var(--text-light); }
-.drop-zone .hint { font-size: 0.82rem; color: var(--text-dim); margin-top: 2px; }
+.drop-zone .big-label {
+  font-family: var(--font-display); font-size: 1.15rem; font-weight: 600;
+  color: var(--text-light); text-align: center; line-height: 1.2;
+}
+/* Shared hint under both buttons */
+.upload-hint {
+  font-size: 0.82rem; color: var(--text-dim);
+  text-align: center; margin-bottom: 18px;
+}
 
-/* Soft glowing ring that ripples outward to draw the eye */
-.drop-zone::after {
+/* Soft glowing ring rippling off the CAMERA badge to draw the eye. Anchored to
+   the badge (not the button) so it stays aligned whatever the button height. */
+.camera-btn .cam-badge::after {
   content: "";
   position: absolute;
-  top: 42px; left: 50%;
-  width: 78px; height: 78px;
-  transform: translate(-50%, 0);
+  inset: 0;
   border-radius: 50%;
   border: 2px solid rgba(230, 184, 102, 0.6);
   animation: ripple 2.4s ease-out infinite;
@@ -237,12 +251,12 @@ html, body {
   96% { transform: rotate(-5deg); }
 }
 @keyframes ripple {
-  0% { opacity: 0.7; transform: translate(-50%, 0) scale(1); }
-  70% { opacity: 0; transform: translate(-50%, 0) scale(1.9); }
+  0% { opacity: 0.7; transform: scale(1); }
+  70% { opacity: 0; transform: scale(1.9); }
   100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .drop-zone, .drop-zone .cam-badge, .drop-zone::after { animation: none; }
+  .drop-zone, .drop-zone .cam-badge, .camera-btn .cam-badge::after { animation: none; }
 }
 
 input[type="file"] { display: none; }
@@ -498,7 +512,7 @@ body.upload-page::after {
   background: rgba(230, 184, 102, 0.18);
 }
 .upload-page .drop-zone .big-label { color: #3a2f26; }
-.upload-page .drop-zone .hint { color: rgba(70, 55, 40, 0.75); }
+.upload-page .upload-hint { color: rgba(70, 55, 40, 0.75); }
 
 /* --- Buttons --- */
 /* Primary "Upload Photos": richer gold gradient, sits well on the light card */

@@ -87,6 +87,18 @@ between pages via themed nav buttons:
 
 Button labels live in the page HTML; the shared look lives in `styles.css`.
 
+**Upload page — two file inputs (deliberate).** The upload page offers **Take
+Photo** and **Choose from Library** as separate buttons backed by two inputs:
+
+| Button | Input | Why |
+|---|---|---|
+| Take Photo | `accept="image/*" capture="environment"` (single) | `capture` is the only reliable way to open the **camera**. Android Chrome sends a plain multi-file input straight to the Google Photos picker, which has **no camera option** — guests couldn't take a fresh photo. |
+| Choose from Library | `accept="image/*,.heic,.heif" multiple` | Multi-select from the gallery; also the drag-&-drop target on laptops. |
+
+Don't merge these back into one input — that reintroduces the Android
+no-camera bug. The ripple animation is anchored to the camera badge (not the
+button) so it stays aligned regardless of button height.
+
 ---
 
 ## Data flow

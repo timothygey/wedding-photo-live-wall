@@ -10,8 +10,10 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import { watchGuard, setBanner } from "./guard.js";
 
-const fileInput = document.getElementById("fileInput");
-const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("fileInput");     // library picker (multi)
+const cameraInput = document.getElementById("cameraInput"); // camera (capture, single)
+const galleryBtn = document.getElementById("galleryBtn");
+const cameraBtn = document.getElementById("cameraBtn");
 const selectedList = document.getElementById("selectedList");
 const uploadBtn = document.getElementById("uploadBtn");
 const toast = document.getElementById("toast");
@@ -26,27 +28,30 @@ watchGuard((locked) => {
   guardLocked = locked;
   setBanner(locked, "💛 Photo uploads are paused for now — thanks so much for celebrating with us! The live wall keeps playing.");
   fileInput.disabled = locked;
-  dropZone.classList.toggle("disabled", locked);
+  cameraInput.disabled = locked;
+  galleryBtn.classList.toggle("disabled", locked);
+  cameraBtn.classList.toggle("disabled", locked);
   uploadBtn.disabled = locked || !chosen.some((c) => c.valid);
 });
 
 /* ---------- File selection ---------- */
 fileInput.addEventListener("change", () => addFiles(fileInput.files));
+cameraInput.addEventListener("change", () => addFiles(cameraInput.files));
 
-// Drag & drop (useful on laptops connected to DSLRs).
+// Drag & drop onto the library button (useful on laptops connected to DSLRs).
 ["dragover", "dragenter"].forEach((ev) =>
-  dropZone.addEventListener(ev, (e) => {
+  galleryBtn.addEventListener(ev, (e) => {
     e.preventDefault();
-    dropZone.classList.add("dragover");
+    galleryBtn.classList.add("dragover");
   })
 );
 ["dragleave", "drop"].forEach((ev) =>
-  dropZone.addEventListener(ev, (e) => {
+  galleryBtn.addEventListener(ev, (e) => {
     e.preventDefault();
-    dropZone.classList.remove("dragover");
+    galleryBtn.classList.remove("dragover");
   })
 );
-dropZone.addEventListener("drop", (e) => {
+galleryBtn.addEventListener("drop", (e) => {
   if (e.dataTransfer?.files?.length) addFiles(e.dataTransfer.files);
 });
 
