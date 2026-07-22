@@ -144,9 +144,12 @@ Uploads, functions, Firestore and Storage all run locally.
 - [ ] `firebase deploy` succeeds with no errors.
 - [ ] Open `wall.html` on the projector; QR renders.
 - [ ] Scan the QR with a phone → upload page opens.
+- [ ] **Take Photo** opens the **camera** directly — test on **Android** (key test: a single input there opens the Google Photos picker with no camera).
+- [ ] **Choose from Library** opens the picker and allows **multi-select**.
 - [ ] Upload a JPG → appears on the wall within seconds.
 - [ ] Upload an **iPhone HEIC** → converts and appears (key test!).
 - [ ] Upload a >50MB file → politely rejected.
+- [ ] Gallery → tap a photo → **Save Photo** saves to the phone (iOS: share sheet → Save Image; Android: downloads → shows in Gallery).
 - [ ] Leave a **blessing** (with a name) → appears as a text card on the wall + gallery.
 - [ ] Try a blessing over 25 words → the counter blocks sending.
 - [ ] With 16+ frames on the wall, it **auto-scrolls** and loops back to the top.

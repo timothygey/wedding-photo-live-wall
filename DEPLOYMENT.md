@@ -175,6 +175,19 @@ Callables live at `https://asia-southeast1-wedding-photo-wall-3ace4.cloudfunctio
    (A *real* budget notification logs `cost=0 … SGD` and correctly does nothing, which also confirms the live budget→topic link.)
 3. Guest pages show the paused banner → **clear the lock** via the admin Resume button (or the `setGuard` unlock above).
 
+### Device checks (mobile — can't be covered by CLI)  ✅ verified
+Open the site on a real phone and check both platform-specific paths:
+
+| Action | iOS (Safari/Chrome) | Android (Chrome) |
+|---|---|---|
+| **Take Photo** (upload page) | Camera opens directly | Camera opens directly — **the bug this fixes**: a single multi-file input opens the Google Photos picker with *no camera option* |
+| **Choose from Library** | Photo library, multi-select | Picker, multi-select |
+| **Save Photo** (gallery) | Share sheet → **Save Image** → Photos | Downloads → appears in Gallery (often a "Download" album) |
+
+If Save silently does nothing, the bucket CORS isn't applied (see above). If the
+camera won't open on Android, check that `cameraInput` still has the `capture`
+attribute and wasn't merged back into the library input.
+
 ### Blessing validation (`postBlessing`)  ✅ verified
 ```bash
 # 26 words (> 25) → rejected
