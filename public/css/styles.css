@@ -441,7 +441,9 @@ input[type="file"] { display: none; }
 }
 /* QR stays on a SOLID white card so it's always crisp & scannable */
 .qr-card { background: #fff; padding: 1vw; border-radius: 18px; border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 10px 30px rgba(0,0,0,0.28); }
-.qr-card img, .qr-card canvas, .qr-card > div { display: block; width: 12vw; height: 12vw; }
+/* QR size only. Max is 16vw before the card (QR + 2×1vw padding) overflows the
+   22vw panel's 2vw side padding — 15vw keeps a little breathing room. */
+.qr-card img, .qr-card canvas, .qr-card > div { display: block; width: 15vw; height: 15vw; }
 .qr-panel .scan-cta { margin-top: 1.4vw; font-size: 1.4vw; font-weight: 600; font-family: var(--font-display); color: #3a2f26; }
 .qr-panel .scan-sub { font-family: var(--font-body); margin-top: 0.4em; font-size: 0.82vw; color: rgba(70, 55, 40, 0.8); max-width: 90%; }
 
