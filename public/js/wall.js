@@ -180,10 +180,13 @@ function fitBlessing(el) {
   const availH = card.clientHeight;
   if (!availW || !availH) return;
 
-  // Top-align while measuring so vertical overflow is fully reported
-  // (flex centering can hide overflow that spills above the top).
+  // Measure top/left-aligned: flex centering spills overflow out BOTH sides,
+  // but scrollWidth/scrollHeight only report overflow toward the end edge, so
+  // centered text under-reports and the search would pick too large a font.
   const prevJustify = card.style.justifyContent;
+  const prevAlign = card.style.alignItems;
   card.style.justifyContent = "flex-start";
+  card.style.alignItems = "flex-start";
 
   let lo = 12, hi = Math.floor(availH * 0.5), best = lo;
   while (lo <= hi) {
@@ -198,6 +201,7 @@ function fitBlessing(el) {
   }
   card.style.fontSize = best + "px";
   card.style.justifyContent = prevJustify; // restore centering
+  card.style.alignItems = prevAlign;
 }
 
 // Re-fit every blessing when the viewport (and thus frame size) changes.

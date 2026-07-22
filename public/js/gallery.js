@@ -152,8 +152,12 @@ function fitCell(cell) {
   const availW = card.clientWidth;
   const availH = card.clientHeight;
   if (!availW || !availH) return;
+  // Measure top/left-aligned — centered flex hides overflow on the start side,
+  // so scrollWidth/scrollHeight would under-report (long unbreakable words).
   const prevJustify = card.style.justifyContent;
+  const prevAlign = card.style.alignItems;
   card.style.justifyContent = "flex-start";
+  card.style.alignItems = "flex-start";
   let lo = 10, hi = Math.floor(availH * 0.5), best = lo;
   while (lo <= hi) {
     const mid = (lo + hi) >> 1;
@@ -167,6 +171,7 @@ function fitCell(cell) {
   }
   card.style.fontSize = best + "px";
   card.style.justifyContent = prevJustify;
+  card.style.alignItems = prevAlign;
 }
 
 let refitTimer = null;
