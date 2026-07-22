@@ -260,6 +260,21 @@ the wall and gallery therefore re-fit each blessing on `document.fonts.ready`.
 - Rendered with `textContent` (never `innerHTML`), so a blessing can't inject
   markup/script.
 
+**Long single words** (e.g. `CONGRATZZZZZZZZZZZZ…` — one 190-char "word" fits
+inside the 25-word / 200-char limits) used to run off both edges of the frame.
+Two things fix it, and **both are required**:
+
+1. `overflow-wrap: anywhere` on `.blessing-card` / `.lb-msg` — normal CSS only
+   wraps at whitespace, so an unbreakable word can't wrap at all. Use
+   `anywhere` rather than `break-word` because it also shrinks *min-content*,
+   which is what stops the flex item being sized by the giant word. Do **not**
+   use `word-break: break-all` — that chops ordinary sentences mid-word too.
+2. The auto-fit measures with `align-items: flex-start` (alongside
+   `justify-content: flex-start`). Centered flex spills overflow out **both**
+   sides, but `scrollWidth`/`scrollHeight` only report overflow toward the end
+   edge — so centered text under-reports and the binary search picks a font
+   that's too large.
+
 ---
 
 ## Live wall auto-scroll

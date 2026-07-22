@@ -152,6 +152,7 @@ Uploads, functions, Firestore and Storage all run locally.
 - [ ] Gallery → tap a photo → **Save Photo** saves to the phone (iOS: share sheet → Save Image; Android: downloads → shows in Gallery).
 - [ ] Leave a **blessing** (with a name) → appears as a text card on the wall + gallery.
 - [ ] Try a blessing over 25 words → the counter blocks sending.
+- [ ] Blessing with one very long word (`CONGRATZZZZZZZZZZZZZZZZ…`) → wraps and shrinks to fit, not cut off at the frame edges.
 - [ ] With 16+ frames on the wall, it **auto-scrolls** and loops back to the top.
 - [ ] Gallery shows all photos/blessings; tap → enlarge + download (photos) works.
 - [ ] Budget alert configured in Google Cloud console.
